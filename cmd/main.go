@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/plugin"
 )
 
 const configFilePath = "assets/config.yaml"
@@ -19,4 +20,10 @@ func main() {
 	}
 
 	fmt.Printf("config loaded successfully: %v", config)
+
+	pluginManager := plugin.NewPluginManager(config)
+	err = pluginManager.DownloadPlugins()
+	if err != nil {
+		fmt.Println("Error downloading plugins:", err)
+	}
 }
