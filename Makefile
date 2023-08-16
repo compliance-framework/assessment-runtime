@@ -13,10 +13,14 @@ build:
 	@echo "Building $(BINARY_NAME)..."
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./cmd/
 
+run:
+	@echo "Running $(BINARY_NAME)..."
+	@$(GO) run ./cmd/
+
 # Run unit tests
 test:
 	@echo "Running tests..."
-	@$(GO) test -v ./pkg/...
+	@$(GO) test -v ./...
 
 # Clean up binaries and test caches
 clean:

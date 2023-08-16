@@ -1,7 +1,22 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/compliance-framework/assessment-runtime/config"
+)
+
+const configFilePath = "assets/config.yaml"
 
 func main() {
-	fmt.Println("Hello, from Cloud Compliance Framework!")
+	confManager := config.NewConfigurationManager()
+
+	config, err := confManager.LoadConfig(configFilePath)
+	if err != nil {
+		fmt.Printf("failed to load config: %s", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("config loaded successfully: %v", config)
 }
