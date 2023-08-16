@@ -11,7 +11,7 @@ all: build
 # Build the Go application
 build:
 	@echo "Building $(BINARY_NAME)..."
-	@$(GO) build -o ./cmd/bin/$(BINARY_NAME) ./cmd/ar
+	@$(GO) build -o ./bin/$(BINARY_NAME) ./cmd/
 
 # Run unit tests
 test:
