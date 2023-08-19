@@ -2,37 +2,38 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	"github.com/compliance-framework/assessment-runtime/plugin/proto"
-
 	"google.golang.org/grpc"
 )
 
-type ExecuteAction func(in *proto.ActionInput) (*proto.ActionOutput, error)
-
 type pluginServer struct {
 	proto.UnimplementedActionServiceServer
-	ExecuteFunction func(in *proto.ActionInput) (*proto.ActionOutput, error)
+	ExecuteFunc func(in *proto.ActionInput) (*proto.ActionOutput, error)
+}
+
+func NewPluginServer(executeFunc func(in *proto.ActionInput) (*proto.ActionOutput, error)) *pluginServer {
+	return &pluginServer{ExecuteFunc: executeFunc}
 }
 
 func (s *pluginServer) Execute(ctx context.Context, in *proto.ActionInput) (*proto.ActionOutput, error) {
-	if s.ExecuteFunction == nil {
-		log.Output(2, "ExecuteFunction is nil")
-		return nil, nil
+	if s.ExecuteFunc == nil {
+		return nil, fmt.Errorf("ExecuteFunc is nil")
 	}
-	return s.ExecuteFunction(in)
+	return s.ExecuteFunc(in)
 }
 
-func Activate(executeAction ExecuteAction) {
+func Activate(executeFunc func(in *proto.ActionInput) (*proto.ActionOutput, error)) {
 	listener, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		panic(err)
 	}
 
 	s := grpc.NewServer()
-	proto.RegisterActionServiceServer(s, &pluginServer{ExecuteFunction: executeAction})
+	proto.RegisterActionServiceServer(s, NewPluginServer(executeFunc))
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
