@@ -7,7 +7,7 @@ type Config struct {
 	Plugins           []Plugin `yaml:"plugins"`
 }
 
-// Plugin represents a plugin configuration.
+// Plugin represents a plugins configuration.
 type Plugin struct {
 	Name    string `yaml:"name"`
 	Version string `yaml:"version"`

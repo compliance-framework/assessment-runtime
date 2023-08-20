@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.31.0
 // 	protoc        v4.23.4
-// source: internal/plugin/action.proto
+// source: internal/plugins/action.proto
 
-package plugin
+package plugins
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -262,16 +262,16 @@ func file_internal_plugin_action_proto_rawDescGZIP() []byte {
 
 var file_internal_plugin_action_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_internal_plugin_action_proto_goTypes = []interface{}{
-	(*ActionInput)(nil),   // 0: plugin.ActionInput
-	(*ActionOutput)(nil),  // 1: plugin.ActionOutput
-	(*Empty)(nil),         // 2: plugin.Empty
+	(*ActionInput)(nil),   // 0: plugins.ActionInput
+	(*ActionOutput)(nil),  // 1: plugins.ActionOutput
+	(*Empty)(nil),         // 2: plugins.Empty
 	(*emptypb.Empty)(nil), // 3: google.protobuf.Empty
 }
 var file_internal_plugin_action_proto_depIdxs = []int32{
-	0, // 0: plugin.ActionService.Execute:input_type -> plugin.ActionInput
-	3, // 1: plugin.ActionService.Shutdown:input_type -> google.protobuf.Empty
-	1, // 2: plugin.ActionService.Execute:output_type -> plugin.ActionOutput
-	3, // 3: plugin.ActionService.Shutdown:output_type -> google.protobuf.Empty
+	0, // 0: plugins.ActionService.Execute:input_type -> plugins.ActionInput
+	3, // 1: plugins.ActionService.Shutdown:input_type -> google.protobuf.Empty
+	1, // 2: plugins.ActionService.Execute:output_type -> plugins.ActionOutput
+	3, // 3: plugins.ActionService.Shutdown:output_type -> google.protobuf.Empty
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

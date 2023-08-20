@@ -3,11 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/compliance-framework/assessment-runtime/internal/plugin"
+	"github.com/compliance-framework/assessment-runtime/plugins"
 )
-
-func main() {
-}
 
 type SamplePlugin struct{}
 
@@ -16,12 +13,16 @@ func (p *SamplePlugin) Init() error {
 	return nil
 }
 
-func (p *SamplePlugin) Execute(ctx context.Context, in *plugin.ActionInput) (*plugin.ActionOutput, error) {
+func (p *SamplePlugin) Execute(ctx context.Context, in *plugins.ActionInput) (*plugins.ActionOutput, error) {
 	fmt.Println("Plugin executed")
-	return &plugin.ActionOutput{}, nil
+	return &plugins.ActionOutput{}, nil
 }
 
 func (p *SamplePlugin) Shutdown(ctx context.Context) error {
 	fmt.Println("Plugin shutdown")
 	return nil
+}
+
+func main() {
+	plugins.Register(&SamplePlugin{})
 }

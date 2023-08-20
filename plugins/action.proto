@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 package plugin;
-option go_package = "./plugin";
+option go_package = "./plugins";
 
 message ActionInput {
     string SSPId = 1;

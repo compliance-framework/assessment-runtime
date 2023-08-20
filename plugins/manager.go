@@ -1,4 +1,4 @@
-package plugin
+package plugins
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ func (m *PluginManager) DownloadPlugins() error {
 }
 
 func (m *PluginManager) downloadPlugin(p config.Plugin) error {
-	pluginPath := filepath.Join("./plugins", fmt.Sprintf("%s-%s.plugin", p.Name, p.Version))
+	pluginPath := filepath.Join("./plugins", fmt.Sprintf("%s-%s.plugins", p.Name, p.Version))
 	if _, err := os.Stat(pluginPath); !os.IsNotExist(err) {
 		// File exists, no need to download
 		return nil
