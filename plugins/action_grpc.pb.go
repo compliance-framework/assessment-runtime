@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: internal/plugins/action.proto
+// source: plugins/action.proto
 
 package plugins
 
@@ -20,8 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ActionService_Execute_FullMethodName  = "/plugins.ActionService/Execute"
-	ActionService_Shutdown_FullMethodName = "/plugins.ActionService/Shutdown"
+	ActionService_Execute_FullMethodName  = "/plugin.ActionService/Execute"
+	ActionService_Shutdown_FullMethodName = "/plugin.ActionService/Shutdown"
 )
 
 // ActionServiceClient is the client API for ActionService service.
@@ -128,7 +128,7 @@ func _ActionService_Shutdown_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ActionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "plugins.ActionService",
+	ServiceName: "plugin.ActionService",
 	HandlerType: (*ActionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -141,5 +141,5 @@ var ActionService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/plugins/action.proto",
+	Metadata: "plugins/action.proto",
 }
