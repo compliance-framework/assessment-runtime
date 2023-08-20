@@ -18,7 +18,9 @@ plugins:
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(tmpfile.Name())
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(tmpfile.Name())
 
 	if _, err := tmpfile.Write([]byte(content)); err != nil {
 		t.Fatal(err)
