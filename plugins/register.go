@@ -41,9 +41,7 @@ func Register(plugin Plugin) {
 
 	select {
 	case <-ctx.Done():
-		if err := listener.Close(); err != nil {
-			log.Errorf("Failed to close listener: %v", err)
-		}
+		_ = listener.Close()
 		server.Stop()
 		<-doneCh
 

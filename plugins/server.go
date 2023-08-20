@@ -32,7 +32,6 @@ func NewServer(plugin Plugin) *Server {
 
 func (s *Server) Start() {
 	go func() {
-		log.Tracef("Starting plugin server")
 		if err := s.GrpcServer.Serve(s.Listener); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 		}
@@ -40,7 +39,5 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Stop() {
-	log.Tracef("Stopping plugin server")
 	s.GrpcServer.GracefulStop()
-	log.Tracef("Stopped plugin server")
 }
