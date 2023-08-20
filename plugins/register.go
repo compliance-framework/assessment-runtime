@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -15,7 +14,7 @@ func Register(plugin Plugin) {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
 
-	listener, err := net.Listen("tcp", ":9000")
+	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -32,7 +31,11 @@ func Register(plugin Plugin) {
 		DoneCh:     doneCh,
 	}
 
-	fmt.Printf("%s|%s", server.Listener.Addr().Network(), server.Listener.Addr().String())
+	log.WithFields(log.Fields{
+		"network": server.Listener.Addr().Network(),
+		"host":    listener.Addr().(*net.TCPAddr).IP.String(),
+		"port":    listener.Addr().(*net.TCPAddr).Port,
+	}).Info()
 
 	go server.Start()
 
