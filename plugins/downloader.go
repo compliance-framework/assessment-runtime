@@ -2,12 +2,13 @@ package plugins
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/compliance-framework/assessment-runtime/config"
 )
@@ -42,7 +43,7 @@ func (m *PluginDownloader) DownloadPlugins() error {
 
 	for _, plugin := range m.cfg.Plugins {
 		wg.Add(1)
-		go func(p config.Plugin) {
+		go func(p config.PluginConfig) {
 			defer wg.Done()
 			if err := m.downloadPlugin(p); err != nil {
 				errorCh <- err
@@ -71,7 +72,7 @@ func (m *PluginDownloader) DownloadPlugins() error {
 	return nil
 }
 
-func (m *PluginDownloader) downloadPlugin(p config.Plugin) error {
+func (m *PluginDownloader) downloadPlugin(p config.PluginConfig) error {
 	pluginPath := filepath.Join(PluginPath, fmt.Sprintf("%s-%s", p.Name, p.Version))
 
 	if _, err := os.Stat(pluginPath); !os.IsNotExist(err) {
