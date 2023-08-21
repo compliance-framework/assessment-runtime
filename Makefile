@@ -40,3 +40,13 @@ vet:
 lint:
 	@echo "Running lint..."
 	@golint ./...
+
+build-images:
+	CGO_ENABLED=0 GOOS=linux go build -o tests/registry/sample ./tests/sampleplugin/main.go
+	docker build -t plugin-registry ./tests/registry
+	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
+	docker compose -f ./tests/docker-compose.yml up
+
+start:
+	CGO_ENABLED=0 GOOS=linux go build -o tests/registry/sample ./tests/sampleplugin/main.go
+	docker compose -f ./tests/docker-compose.yml up --build

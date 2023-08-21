@@ -1,0 +1,5 @@
+controlPlaneURL: "http://control-plane"
+pluginRegistryURL: "http://plugin-registry"
+plugins:
+  - name: "sample"
+    version: "1.0.0"

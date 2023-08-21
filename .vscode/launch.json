@@ -9,11 +9,19 @@
       "program": "${workspaceFolder}"
     },
     {
-      "name": "Debug Package",
+      "name": "Debug Host",
       "type": "go",
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}/cmd/main.go"
+    },
+    {
+      "name": "Debug Plugin",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/tests/sampleplugin/main.go"
     }
+
   ]
 }

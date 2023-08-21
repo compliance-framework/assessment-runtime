@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package plugin;
+option go_package = "./plugins";
+
+message ActionInput {
+    string SSPId = 1;
+    string ControlId = 2;
+    string ComponentId = 3;
+    string AssessmentID = 4;
+}
+
+message ActionOutput {
+    string SSPId = 1;
+    string ControlId = 2;
+    string ComponentId = 3;
+    string AssessmentID = 4;
+    bool Compliant = 5;
+}
+
+message Empty {}
+
+service ActionService {
+    rpc Execute (ActionInput) returns (ActionOutput);
+    rpc Shutdown (google.protobuf.Empty) returns (google.protobuf.Empty);
+}

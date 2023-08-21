@@ -50,10 +50,10 @@ func (cm *ConfigurationManager) validate() error {
 
 	for _, plugin := range cm.config.Plugins {
 		if plugin.Name == "" {
-			return ConfigurationError("plugin name is empty")
+			return ConfigurationError("plugins name is empty")
 		}
 		if plugin.Version == "" {
-			return ConfigurationError(fmt.Sprintf("plugin version for '%s' is empty", plugin.Name))
+			return ConfigurationError(fmt.Sprintf("plugins version for '%s' is empty", plugin.Name))
 		}
 	}
 

@@ -1,29 +1,32 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/compliance-framework/assessment-runtime/config"
-	"github.com/compliance-framework/assessment-runtime/plugin"
+	"github.com/compliance-framework/assessment-runtime/plugins"
 )
 
-const configFilePath = "assets/config.yaml"
+const configFilePath = "config.yaml"
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.TraceLevel)
+
 	confManager := config.NewConfigurationManager()
 
-	config, err := confManager.LoadConfig(configFilePath)
+	cfg, err := confManager.LoadConfig(configFilePath)
 	if err != nil {
-		fmt.Printf("failed to load config: %s", err)
-		os.Exit(1)
+		log.Fatalf("Failed to load cfg: %s", err)
 	}
 
-	fmt.Printf("config loaded successfully: %v", config)
+	log.Infof("Cfg loaded successfully: %v", cfg)
 
-	pluginManager := plugin.NewPluginManager(config)
-	err = pluginManager.DownloadPlugins()
+	pluginDownloader := plugins.NewPluginDownloader(cfg)
+	err = pluginDownloader.DownloadPlugins()
 	if err != nil {
-		fmt.Println("Error downloading plugins:", err)
+		log.Error("Error downloading some of the plugins:", err)
 	}
 }

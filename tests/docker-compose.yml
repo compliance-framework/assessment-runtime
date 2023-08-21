@@ -1,0 +1,12 @@
+services:
+  plugin-registry:
+    build:
+      context: registry
+    ports:
+      - "3000:3000"
+  assessment-runtime:
+    build:
+      context: ../
+      dockerfile: tests/runtime/Dockerfile
+    depends_on:
+      - plugin-registry
