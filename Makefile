@@ -46,5 +46,14 @@ build-images:
 	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
 
 start:
-	CGO_ENABLED=0 GOOS=linux go build -o tests/registry/sample ./tests/sampleplugin/main.go
-	docker compose -f ./tests/docker-compose.yml up --build
+	docker compose -d -f ./tests/docker-compose.yml up --build
+
+stop:
+	docker compose -f ./tests/docker-compose.yml down
+
+build-e2e:
+	mkdir -p bin/plugins/sample/1.0.0
+	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
+	chmod +x bin/plugins/sample/1.0.0/sample
+	@$(GO) build -o ./bin/$(BINARY_NAME) ./
+	cp ./tests/runtime/config.yaml ./bin/config.yaml
