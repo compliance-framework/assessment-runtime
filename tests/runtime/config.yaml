@@ -3,3 +3,5 @@ pluginRegistryURL: "http://plugin-registry"
 plugins:
   - name: "sample"
     version: "1.0.0"
+    schedule: "*/5 * * * * *"
+
