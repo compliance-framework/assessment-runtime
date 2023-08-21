@@ -10,7 +10,6 @@ type Server struct {
 	GrpcServer *grpc.Server
 	Listener   net.Listener
 	Plugin     Plugin
-	DoneCh     chan struct{}
 }
 
 func NewServer(plugin Plugin) *Server {
@@ -26,7 +25,6 @@ func NewServer(plugin Plugin) *Server {
 		GrpcServer: grpcServer,
 		Listener:   listener,
 		Plugin:     plugin,
-		DoneCh:     make(chan struct{}),
 	}
 }
 

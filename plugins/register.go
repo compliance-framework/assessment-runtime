@@ -28,7 +28,6 @@ func Register(plugin Plugin) {
 		GrpcServer: grpcServer,
 		Listener:   listener,
 		Plugin:     plugin,
-		DoneCh:     doneCh,
 	}
 
 	log.WithFields(log.Fields{
