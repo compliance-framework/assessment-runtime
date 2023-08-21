@@ -12,22 +12,6 @@ type Server struct {
 	Plugin     Plugin
 }
 
-func NewServer(plugin Plugin) *Server {
-	listener, err := net.Listen("tcp", ":9000")
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
-
-	grpcServer := grpc.NewServer()
-	RegisterActionServiceServer(grpcServer, &ActionService{Plugin: plugin})
-
-	return &Server{
-		GrpcServer: grpcServer,
-		Listener:   listener,
-		Plugin:     plugin,
-	}
-}
-
 func (s *Server) Start() {
 	go func() {
 		if err := s.GrpcServer.Serve(s.Listener); err != nil {
