@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os"
 
@@ -20,15 +19,14 @@ func main() {
 
 	cfg, err := confManager.LoadConfig(configFilePath)
 	if err != nil {
-		fmt.Printf("failed to load cfg: %s", err)
-		os.Exit(1)
+		log.Fatalf("Failed to load cfg: %s", err)
 	}
 
-	fmt.Printf("cfg loaded successfully: %v", cfg)
+	log.Infof("Cfg loaded successfully: %v", cfg)
 
-	pluginManager := plugins.NewPluginManager(cfg)
-	err = pluginManager.DownloadPlugins()
+	pluginDownloader := plugins.NewPluginDownloader(cfg)
+	err = pluginDownloader.DownloadPlugins()
 	if err != nil {
-		fmt.Println("Error downloading plugins:", err)
+		log.Error("Error downloading some of the plugins:", err)
 	}
 }

@@ -16,12 +16,12 @@ const (
 	PluginPath = "./plugins"
 )
 
-type PluginManager struct {
+type PluginDownloader struct {
 	cfg    config.Config
 	client *http.Client
 }
 
-func NewPluginManager(cfg config.Config) *PluginManager {
+func NewPluginDownloader(cfg config.Config) *PluginDownloader {
 	if _, err := os.Stat(PluginPath); os.IsNotExist(err) {
 		err = os.MkdirAll(PluginPath, 0755)
 		if err != nil {
@@ -30,13 +30,13 @@ func NewPluginManager(cfg config.Config) *PluginManager {
 		}
 	}
 
-	return &PluginManager{
+	return &PluginDownloader{
 		cfg:    cfg,
 		client: &http.Client{},
 	}
 }
 
-func (m *PluginManager) DownloadPlugins() error {
+func (m *PluginDownloader) DownloadPlugins() error {
 	var wg sync.WaitGroup
 	var errorCh = make(chan error)
 
@@ -71,7 +71,7 @@ func (m *PluginManager) DownloadPlugins() error {
 	return nil
 }
 
-func (m *PluginManager) downloadPlugin(p config.Plugin) error {
+func (m *PluginDownloader) downloadPlugin(p config.Plugin) error {
 	pluginPath := filepath.Join(PluginPath, fmt.Sprintf("%s-%s", p.Name, p.Version))
 
 	if _, err := os.Stat(pluginPath); !os.IsNotExist(err) {
