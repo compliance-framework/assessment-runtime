@@ -2,8 +2,8 @@ package config
 
 // Config represents the entire configuration loaded from the Yaml file.
 type Config struct {
-	ControlPlaneURL   string   `yaml:"ControlPlaneURL"`
-	PluginRegistryURL string   `yaml:"PluginRegistryURL"`
+	ControlPlaneURL   string   `yaml:"controlPlaneURL"`
+	PluginRegistryURL string   `yaml:"pluginRegistryURL"`
 	Plugins           []Plugin `yaml:"plugins"`
 }
 
