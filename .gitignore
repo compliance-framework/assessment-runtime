@@ -18,7 +18,13 @@ bin/**
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
+# Goland IDE
+.idea/
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 .cosine
 node_modules/
+
+# Sample plugin
+tests/registry/sample

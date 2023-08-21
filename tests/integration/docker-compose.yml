@@ -1,6 +1,0 @@
-services:
-  plugin-registry:
-    build:
-      context: ./registry-server
-    ports:
-      - "3000:3000"

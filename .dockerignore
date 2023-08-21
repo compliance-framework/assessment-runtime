@@ -1,0 +1,10 @@
+bin/
+scripts/
+.cosine
+.vscode
+.dockerignore
+.editorconfig
+.gitignore
+LICENCE.md
+Makefile
+README.md
