@@ -14,7 +14,7 @@ plugins:
   - name: plugin1
     version: v1.2.3
 `
-	tmpfile, err := os.CreateTemp("", "config.yaml")
+	tmpfile, err := os.CreateTemp("", "config.yml")
 	if err != nil {
 		t.Fatal(err)
 	}

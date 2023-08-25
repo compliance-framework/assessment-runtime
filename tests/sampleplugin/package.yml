@@ -1,0 +1,8 @@
+name: "sample-plugins"
+version: "1.0.0"
+author: "Onsel Akin"
+plugins:
+  - name: "sample"
+    version: "1.0.0"
+    schedule: "*/5 * * * * *"
+

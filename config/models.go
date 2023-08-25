@@ -11,5 +11,13 @@ type Config struct {
 type PluginConfig struct {
 	Name     string `yaml:"name"`
 	Version  string `yaml:"version"`
+	Package  string `yaml:"package"`
 	Schedule string `yaml:"schedule"`
+}
+
+type PluginPackageConfig struct {
+	Name    string         `yaml:"name"`
+	Version string         `yaml:"version"`
+	Author  string         `yaml:"author"`
+	Plugins []PluginConfig `yaml:"plugins"`
 }

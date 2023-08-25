@@ -2,6 +2,7 @@ controlPlaneURL: "http://control-plane"
 pluginRegistryURL: "http://plugin-registry"
 plugins:
   - name: "sample"
+    package: "sample"
     version: "1.0.0"
     schedule: "*/5 * * * * *"
 

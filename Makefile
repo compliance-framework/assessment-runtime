@@ -55,5 +55,6 @@ start-local:
 	mkdir -p bin/plugins/sample/1.0.0
 	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
 	chmod +x bin/plugins/sample/1.0.0/sample
+	cp ./tests/sampleplugin/package.yml bin/plugins/sample/1.0.0/package.yml
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
-	cp ./tests/runtime/config.yaml ./bin/config.yaml
+	cp ./tests/runtime/config.yml ./bin/config.yml

@@ -1,22 +1,25 @@
 package plugins
 
-import goplugin "github.com/hashicorp/go-plugin"
+import (
+	"context"
+	goplugin "github.com/hashicorp/go-plugin"
+	"google.golang.org/grpc"
+)
 
 type Plugin interface {
 	Execute(*ActionInput) (*ActionOutput, error)
-	Shutdown() error
 }
 
-type GRPCPlugin struct {
+type AssessmentActionGRPCPlugin struct {
 	goplugin.Plugin
 	Impl Plugin
 }
 
-func (p *GRPCPlugin) GRPCServer(broker *goplugin.GRPCBroker, s *goplugin.GRPCServer) error {
-	RegisterActionServiceServer(s, &ActionService{Plugin: p.Impl})
+func (p *AssessmentActionGRPCPlugin) GRPCServer(broker *goplugin.GRPCBroker, s *grpc.Server) error {
+	RegisterActionServiceServer(s, &grpcServer{Impl: p.Impl})
 	return nil
 }
 
-func (p *GRPCPlugin) GRPCClient(ctx *goplugin.GRPCBroker, c *goplugin.GRPCClient) (interface{}, error) {
-	return &GRPCClient{client: NewPluginClient(c)}, nil
+func (p *AssessmentActionGRPCPlugin) GRPCClient(_ context.Context, _ *goplugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
+	return &grpcClient{client: NewActionServiceClient(c)}, nil
 }

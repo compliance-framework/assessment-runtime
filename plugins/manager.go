@@ -1,140 +1,105 @@
 package plugins
 
 import (
-	"bufio"
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/config"
+	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"sync"
-	"time"
 )
 
-type clientConfig struct {
-	Host    string `json:"host"`
-	Network string `json:"network"`
-	Port    int    `json:"port"`
-}
-
-// This will hold the process and the grpc client
-type pluginWrapper struct {
-	pluginConfig config.PluginConfig
-	process      *os.Process
-	mutex        sync.Mutex
-}
-
 type PluginManager struct {
-	wrappers map[string]*pluginWrapper
+	cfg     config.Config
+	clients map[string]*goplugin.Client
 }
 
 func NewPluginManager(cfg config.Config) *PluginManager {
-	pluginManager := &PluginManager{
-		wrappers: make(map[string]*pluginWrapper),
+	return &PluginManager{
+		cfg:     cfg,
+		clients: make(map[string]*goplugin.Client),
 	}
-
-	for _, plugin := range cfg.Plugins {
-		pluginManager.wrappers[plugin.Name] = &pluginWrapper{
-			pluginConfig: plugin,
-		}
-	}
-
-	return pluginManager
 }
 
-func (p *PluginManager) InitPlugins() error {
-	log.Info("Initializing plugins")
+func (pm *PluginManager) Start() error {
+	pluginMap := make(map[string][]config.PluginConfig)
+	for _, plugin := range pm.cfg.Plugins {
+		pluginMap[plugin.Package] = append(pluginMap[plugin.Package], plugin)
+	}
+
+	for pkg, plugins := range pluginMap {
+		log.WithField("package", pkg).Info("Loading plugins")
+
+		pluginMap := make(map[string]goplugin.Plugin)
+		for _, plugin := range plugins {
+			log.WithField("plugin", plugin.Name).Info("Loading plugin")
+			pluginMap[plugin.Name] = &AssessmentActionGRPCPlugin{}
+		}
+		client := goplugin.NewClient(&goplugin.ClientConfig{
+			HandshakeConfig:  HandshakeConfig,
+			Plugins:          pluginMap,
+			Cmd:              exec.Command("./bin/plugins/sample/1.0.0/sample"),
+			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolNetRPC, goplugin.ProtocolGRPC},
+		})
+		pm.clients[pkg] = client
+	}
+
 	return nil
 }
 
-func (p *PluginManager) StartPlugin(name string) error {
-	wrapper, ok := p.wrappers[name]
+func (pm *PluginManager) Execute(name string, input ActionInput) error {
+	client, ok := pm.clients[name]
 	if !ok {
-		return fmt.Errorf("plugin %s not found", name)
-	}
-
-	execPath, err := os.Executable()
-	execDir := filepath.Dir(execPath)
-	pluginConfig := wrapper.pluginConfig
-	binaryPath := filepath.Join(execDir, "plugins", pluginConfig.Name, pluginConfig.Version, pluginConfig.Name)
-	log.Info("Starting plugin: ", binaryPath)
-	cmd := exec.Command(binaryPath)
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatalf("Failed to get stdout pipe: %v", err)
-	}
-
-	// TODO: We need to handle stderr as well
-	//stderr, err := cmd.StderrPipe()
-	//if err != nil {
-	//	log.Fatalf("Failed to get stderr pipe: %v", err)
-	//}
-
-	err = cmd.Start()
-	if err != nil {
+		err := fmt.Errorf("plugin %s not found", name)
+		log.WithField("plugin", name).Error(err)
 		return err
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			cmd.Process.Kill()
-			panic(r)
-		}
-	}()
-
-	wrapper.process = cmd.Process
-	log.Infof("Started plugin: %s", pluginConfig.Name)
-
-	// TODO: Need to tie these back to the wrapper
-	doneCtx, ctxCancel := context.WithCancel(context.Background())
-
-	go func() {
-		defer ctxCancel()
-
-		err := cmd.Wait()
-		if err != nil {
-			log.Errorf("Error waiting for plugin: %s", err)
-		} else {
-			log.Infof("Plugin exited successfully")
-		}
-
-		os.Stderr.Sync()
-	}()
-
-	linesCh := make(chan string)
-	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			linesCh <- scanner.Text()
-		}
-	}()
-
-	timeout := time.After(5 * time.Second)
-	select {
-	case <-timeout:
-		return errors.New("plugin timed out")
-	case <-doneCtx.Done():
-		return errors.New("plugin exited")
-	case line := <-linesCh:
-		jsonData := []byte(line)
-		data := clientConfig{}
-		if err := json.Unmarshal(jsonData, &data); err != nil {
-			return fmt.Errorf("failed to get plugin network information: %s", err)
-		}
-		log.Infof("Plugin network information: %d", data.Port)
-
-		// TODO: Create the grpc client and connect to the plugin
+	grpcClient, err := client.Client()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"plugin": name,
+			"error":  err,
+		}).Error("Failed to get GRPC client for plugin")
+		return err
 	}
+
+	raw, err := grpcClient.Dispense(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"plugin": name,
+			"error":  err,
+		}).Error("Failed to dispense plugin")
+		return err
+	}
+
+	plugin := raw.(Plugin)
+	output, err := plugin.Execute(&input)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"plugin": name,
+			"error":  err,
+		}).Error("Failed to execute plugin")
+		return err
+	}
+	log.WithFields(log.Fields{
+		"plugin": name,
+		"output": output,
+	}).Info("Plugin executed successfully")
 
 	return nil
 }
 
-func (p *PluginManager) StopPlugin(name string) error {
-	log.Infof("Stopping plugin: %s", name)
-	return nil
+func (pm *PluginManager) Stop() {
+	var wg sync.WaitGroup
+
+	for _, client := range pm.clients {
+		wg.Add(1)
+		go func(c *goplugin.Client) {
+			defer wg.Done()
+			c.Kill()
+		}(client)
+	}
+
+	wg.Wait()
 }

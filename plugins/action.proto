@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
-
 package plugin;
 option go_package = "./plugins";
 
@@ -20,9 +18,6 @@ message ActionOutput {
     bool Compliant = 5;
 }
 
-message Empty {}
-
 service ActionService {
     rpc Execute (ActionInput) returns (ActionOutput);
-    rpc Shutdown (google.protobuf.Empty) returns (google.protobuf.Empty);
 }

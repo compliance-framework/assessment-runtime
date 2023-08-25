@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 	execDir := filepath.Dir(execPath)
-	configFilePath := filepath.Join(execDir, "config.yaml")
+	configFilePath := filepath.Join(execDir, "config.yml")
 
 	cfg, err := confManager.LoadConfig(configFilePath)
 	if err != nil {
@@ -34,19 +34,20 @@ func main() {
 	err = pluginDownloader.DownloadPlugins()
 	if err != nil {
 		log.Errorf("Error downloading some of the plugins: %s", err)
+		// TODO: If the download error keeps occurring, we should report it back to the control plane.
 	}
 
 	pluginManager := plugins.NewPluginManager(cfg)
-	err = pluginManager.InitPlugins()
+
+	err = pluginManager.Start()
 	if err != nil {
-		log.Fatalf("Error initializing plugins: %s", err)
+		log.Errorf("Error starting plugins: %s", err)
 	}
 
 	scheduler := plugins.NewScheduler()
 	for _, plugin := range cfg.Plugins {
 		scheduler.AddJob(plugin.Schedule, func() {
-			log.Info("Starting plugin: ", plugin.Name)
-			err := pluginManager.StartPlugin(plugin.Name)
+			err := pluginManager.Execute(plugin.Name, plugins.ActionInput{})
 			if err != nil {
 				log.Errorf("Error starting plugin %s: %s", plugin.Name, err)
 				return
