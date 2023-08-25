@@ -55,7 +55,7 @@ func (pm *PluginManager) Start() error {
 			HandshakeConfig:  HandshakeConfig,
 			Plugins:          pluginMap,
 			Cmd:              exec.Command(packagePath),
-			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolNetRPC, goplugin.ProtocolGRPC},
+			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolGRPC},
 		})
 		pm.clients[pkg] = client
 	}
