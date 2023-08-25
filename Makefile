@@ -51,7 +51,7 @@ compose-up:
 compose-down:
 	docker compose -f ./tests/docker-compose.yml down
 
-start-local:
+start:
 	mkdir -p bin/plugins/sample/1.0.0
 	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
 	chmod +x bin/plugins/sample/1.0.0/sample

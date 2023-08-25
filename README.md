@@ -78,7 +78,7 @@ This section explains how to run the Compliance Assessment Runtime System either
 
 ### Local Environment
 
-1. **Build and Prepare**: Execute `make start-local` in your command line. This will build both the `sampleplugin` and the runtime, and place them in the appropriate folder structure.
+1. **Build and Prepare**: Execute `make start` in your command line. This will build both the `sampleplugin` and the runtime, and place them in the appropriate folder structure.
 
 2. **Launch Runtime**: After the build process is complete, run the following command to launch the runtime:
 
@@ -91,7 +91,7 @@ This section explains how to run the Compliance Assessment Runtime System either
 1. **Create Docker Images**: Run the following command to build Docker images for the runtime and the package repository:
 
     ```bash
-    make start
+    make compose-up
     ```
 
 2. **Launch Containers**: The above command will also automatically launch the created Docker containers for the runtime and package repository.
