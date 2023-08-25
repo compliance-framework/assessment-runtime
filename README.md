@@ -98,3 +98,59 @@ This section explains how to run the Compliance Assessment Runtime System either
 
 ---
 
+# Plugin Manager
+
+The `PluginManager` is a struct that manages the lifecycle of plugins in the application. It is responsible for starting, executing, and stopping plugins.
+
+## Structure
+
+The `PluginManager` struct has two fields:
+
+- `cfg`: This is the configuration of the application.
+- `clients`: This is a map where the keys are plugin names and the values are pointers to `goplugin.Client` instances.
+
+## Methods
+
+### NewPluginManager(cfg config.Config) *PluginManager
+
+This function creates a new instance of `PluginManager`. It takes a `config.Config` object as an argument and initializes the `clients` map.
+
+### Start() error
+
+This method starts all the plugins defined in the configuration. It first groups the plugins by their package name. Then, for each package, it creates a new `goplugin.Client`, starts it, and stores it in the `clients` map.
+
+### Execute(name string, input ActionInput) error
+
+This method executes a specific plugin. It takes the name of the plugin and an `ActionInput` object as arguments. It finds the client for the plugin in the `clients` map, dispenses the plugin, and then executes it. If any step fails, it logs the error and returns it.
+
+### Stop()
+
+This method stops all the clients in the `clients` map. It does this concurrently using a `sync.WaitGroup`.
+
+## Usage
+
+To use the `PluginManager`, you first need to create a new instance with `NewPluginManager`, passing in your configuration. You can then start all the plugins with `Start`. To execute a specific plugin, use `Execute`, passing in the name of the plugin and an `ActionInput` object. Finally, you can stop all the plugins with `Stop`.
+
+### Start() error
+
+The `Start` method is responsible for initializing and starting all the plugins defined in the configuration.
+
+Here's a step-by-step breakdown of what it does:
+
+1. It creates a map called `pluginMap` where the keys are package names and the values are slices of `config.PluginConfig` objects.
+
+2. It iterates over all the plugins in the configuration, grouping them by their package name in the `pluginMap`.
+
+3. For each package in the `pluginMap`, it logs that it's loading the plugins for that package.
+
+4. It then creates another map, also called `pluginMap`, where the keys are plugin names and the values are pointers to `AssessmentActionGRPCPlugin` instances.
+
+5. It constructs the path to the plugin package using the package name and version from the first plugin in the package.
+
+6. It logs that it's loading the plugin package, including the package name and path.
+
+7. It creates a new `goplugin.Client` with the `HandshakeConfig`, the `pluginMap`, and a command to execute the plugin package. It also specifies that the client should use the GRPC protocol.
+
+8. Finally, it stores the client in the `clients` map, using the package name as the key.
+
+If any errors occur during this process, the method will return the error.
