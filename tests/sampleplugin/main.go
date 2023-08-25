@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/plugins"
-	"github.com/hashicorp/go-plugin"
 )
 
 type SamplePlugin struct{}
@@ -25,13 +24,7 @@ func (p *SamplePlugin) Shutdown(ctx context.Context) error {
 }
 
 func main() {
-	pluginSet := plugin.PluginSet{
-		"sample": &plugins.AssessmentActionGRPCPlugin{Impl: &SamplePlugin{}},
-	}
-
-	plugin.Serve(&plugin.ServeConfig{
-		HandshakeConfig: plugins.HandshakeConfig,
-		Plugins:         pluginSet,
-		GRPCServer:      plugin.DefaultGRPCServer,
+	plugins.Register(map[string]plugins.Plugin{
+		"sample": &SamplePlugin{},
 	})
 }
