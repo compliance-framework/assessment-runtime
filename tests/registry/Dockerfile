@@ -1,16 +1,20 @@
-# Use the official nginx image as the base
+FROM golang:1.21 as builder
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . ./
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/sample ./tests/sampleplugin/main.go
+
 FROM nginx:latest
 
-# Remove the default nginx HTML files
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy the binary file to the nginx directory
-COPY sample /usr/share/nginx/html/sample/1.0.0/sample
+COPY --from=builder /app/sample /usr/share/nginx/html/sample/1.0.0/sample
 
-# Set permissions to make it readable
 RUN chmod 755 /usr/share/nginx/html/sample/1.0.0/sample
 
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
 EXPOSE 80

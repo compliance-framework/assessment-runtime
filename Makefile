@@ -45,16 +45,15 @@ build-images:
 	docker build -t plugin-registry ./tests/registry
 	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
 
-start:
-	docker compose -d -f ./tests/docker-compose.yml up --build
+compose-up:
+	docker compose -f ./tests/docker-compose.yml up --build
 
-stop:
+compose-down:
 	docker compose -f ./tests/docker-compose.yml down
 
 start-local:
 	mkdir -p bin/plugins/sample/1.0.0
 	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
 	chmod +x bin/plugins/sample/1.0.0/sample
-	cp ./tests/sampleplugin/package.yml bin/plugins/sample/1.0.0/package.yml
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	cp ./tests/runtime/config.yml ./bin/config.yml

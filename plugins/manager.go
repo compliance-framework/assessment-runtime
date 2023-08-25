@@ -5,7 +5,9 @@ import (
 	"github.com/compliance-framework/assessment-runtime/config"
 	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 )
 
@@ -27,6 +29,11 @@ func (pm *PluginManager) Start() error {
 		pluginMap[plugin.Package] = append(pluginMap[plugin.Package], plugin)
 	}
 
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
 	for pkg, plugins := range pluginMap {
 		log.WithField("package", pkg).Info("Loading plugins")
 
@@ -35,10 +42,19 @@ func (pm *PluginManager) Start() error {
 			log.WithField("plugin", plugin.Name).Info("Loading plugin")
 			pluginMap[plugin.Name] = &AssessmentActionGRPCPlugin{}
 		}
+		pluginsPath := filepath.Join(filepath.Dir(ex), "./plugins")
+		packagePath := fmt.Sprintf("%s/%s/%s/%s", pluginsPath, pkg, plugins[0].Version, pkg)
+
+		log.WithFields(log.Fields{
+			"package":     pkg,
+			"pluginsPath": pluginsPath,
+			"packagePath": packagePath,
+		}).Info("Loading plugin package")
+
 		client := goplugin.NewClient(&goplugin.ClientConfig{
 			HandshakeConfig:  HandshakeConfig,
 			Plugins:          pluginMap,
-			Cmd:              exec.Command("./bin/plugins/sample/1.0.0/sample"),
+			Cmd:              exec.Command(packagePath),
 			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolNetRPC, goplugin.ProtocolGRPC},
 		})
 		pm.clients[pkg] = client

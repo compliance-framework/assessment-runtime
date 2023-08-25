@@ -1,7 +1,8 @@
 services:
   plugin-registry:
     build:
-      context: registry
+      context: ../
+      dockerfile: tests/registry/Dockerfile
     ports:
       - "3000:3000"
   assessment-runtime:
