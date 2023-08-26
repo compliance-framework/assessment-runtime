@@ -2,22 +2,22 @@ package config
 
 // Config represents the entire configuration loaded from the Yaml file.
 type Config struct {
-	ControlPlaneURL   string         `yaml:"controlPlaneURL"`
-	PluginRegistryURL string         `yaml:"pluginRegistryURL"`
-	Plugins           []PluginConfig `yaml:"plugins"`
+	ControlPlaneURL   string         `yaml:"controlPlaneURL" json:"controlPlaneURL"`
+	PluginRegistryURL string         `yaml:"pluginRegistryURL" json:"pluginRegistryURL"`
+	Plugins           []PluginConfig `yaml:"plugins" json:"plugins"`
 }
 
 // PluginConfig represents a plugins configuration.
 type PluginConfig struct {
-	Name     string `yaml:"name"`
-	Version  string `yaml:"version"`
-	Package  string `yaml:"package"`
-	Schedule string `yaml:"schedule"`
+	Name     string `yaml:"name" json:"name"`
+	Version  string `yaml:"version" json:"version"`
+	Package  string `yaml:"package" json:"package"`
+	Schedule string `yaml:"schedule" json:"schedule"`
 }
 
 type PluginPackageConfig struct {
-	Name    string         `yaml:"name"`
-	Version string         `yaml:"version"`
-	Author  string         `yaml:"author"`
-	Plugins []PluginConfig `yaml:"plugins"`
+	Name    string         `yaml:"name" json:"name"`
+	Version string         `yaml:"version" json:"version"`
+	Author  string         `yaml:"author" json:"author"`
+	Plugins []PluginConfig `yaml:"plugins" json:"plugins"`
 }

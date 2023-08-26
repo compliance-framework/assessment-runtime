@@ -1,8 +1,11 @@
 controlPlaneURL: "http://control-plane"
 pluginRegistryURL: "http://plugin-registry"
+eventBusURL: "nats://nats:4222"
 plugins:
   - name: "sample"
     package: "sample"
     version: "1.0.0"
     schedule: "*/5 * * * * *"
-
+    config:
+      foo: "bar"
+      baz: "qux"

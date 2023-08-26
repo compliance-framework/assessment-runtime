@@ -1,40 +1,57 @@
 package bus
 
 import (
+	"encoding/json"
+	"github.com/compliance-framework/assessment-runtime/config"
 	"github.com/nats-io/nats.go"
+	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
-type EventBusProxy struct {
-	conn     *nats.Conn
-	channels map[string]chan<- interface{}
-}
+var (
+	conn           *nats.Conn
+	configChannels map[string][]chan<- config.Config
+	mu             sync.Mutex
+)
 
-func NewEventBusProxy(server string) (*EventBusProxy, error) {
-	conn, err := nats.Connect(server)
+func Connect(server string) error {
+	var err error
+	conn, err = nats.Connect(server)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &EventBusProxy{
-		conn:     conn,
-		channels: make(map[string]chan<- interface{}),
-	}, nil
+	configChannels = make(map[string][]chan<- config.Config)
+	return nil
 }
 
-func (ebp *EventBusProxy) Subscribe(subject string, ch chan<- interface{}) error {
-	_, err := ebp.conn.Subscribe(subject, func(m *nats.Msg) {
-		ch <- m.Data
+func SubToConfig(ch chan<- config.Config) error {
+	_, err := conn.Subscribe("configuration", func(m *nats.Msg) {
+		var cfg config.Config
+		err := json.Unmarshal(m.Data, &cfg)
+		if err != nil {
+			log.Printf("Error unmarshalling data: %v", err)
+			return
+		}
+		ch <- cfg
 	})
 	if err != nil {
 		return err
 	}
-	ebp.channels[subject] = ch
+	mu.Lock()
+	configChannels["configuration"] = append(configChannels["configuration"], ch)
+	mu.Unlock()
 	return nil
 }
 
-func (ebp *EventBusProxy) Publish(subject string, data interface{}) error {
-	return ebp.conn.Publish(subject, data.([]byte))
+func PubConfig(cfg config.Config) error {
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	return conn.Publish("configuration", data)
 }
 
-func (ebp *EventBusProxy) Close() {
-	ebp.conn.Close()
+func Close() {
+	// Close the connection
+	conn.Close()
 }
