@@ -25,7 +25,7 @@ type PluginDownloader struct {
 func NewPluginDownloader(cfg config.Config) *PluginDownloader {
 	ex, err := os.Executable()
 	if err != nil {
-
+		panic(err)
 	}
 	pluginsPath := filepath.Join(filepath.Dir(ex), "./plugins")
 
@@ -104,13 +104,12 @@ func (m *PluginDownloader) downloadPlugin(p config.PluginConfig) error {
 	if err != nil {
 		return err
 	}
+	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
 	}
-
-	out.Close()
 
 	err = os.Chmod(pluginPath+"/"+p.Name, 0755)
 	return err
