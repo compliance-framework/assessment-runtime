@@ -10,17 +10,24 @@ import (
 
 var (
 	conn           *nats.Conn
-	configChannels map[string][]chan<- config.Config
+	configChannels []chan<- config.Config
 	mu             sync.Mutex
 )
 
 func Connect(server string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if conn != nil && configChannels != nil {
+		return nil
+	}
+
 	var err error
-	conn, err = nats.Connect(server)
+	conn, err = nats.Connect(server, nats.ReconnectBufSize(5*1024*1024))
 	if err != nil {
 		return err
 	}
-	configChannels = make(map[string][]chan<- config.Config)
+	configChannels = make([]chan<- config.Config, 0)
 	return nil
 }
 
@@ -38,7 +45,7 @@ func SubToConfig(ch chan<- config.Config) error {
 		return err
 	}
 	mu.Lock()
-	configChannels["configuration"] = append(configChannels["configuration"], ch)
+	configChannels = append(configChannels, ch)
 	mu.Unlock()
 	return nil
 }
@@ -52,6 +59,5 @@ func PubConfig(cfg config.Config) error {
 }
 
 func Close() {
-	// Close the connection
 	conn.Close()
 }
