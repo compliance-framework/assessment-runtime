@@ -13,10 +13,6 @@ import (
 	"github.com/compliance-framework/assessment-runtime/config"
 )
 
-const (
-	PluginPath = "./plugins"
-)
-
 type PluginDownloader struct {
 	cfg    config.Config
 	client *http.Client
