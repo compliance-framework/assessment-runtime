@@ -7,17 +7,17 @@ option go_package = "./plugins";
 
 // ActionInput is a message type that represents the input for an action.
 message ActionInput {
+  // AssessmentID is the identifier for the assessment.
+  string AssessmentId = 1;
+
   // SSPId is the identifier for the System Security Plan.
-  string SSPId = 1;
+  string SSPId = 2;
 
   // ControlId is the identifier for the control.
-  string ControlId = 2;
+  string ControlId = 3;
 
   // ComponentId is the identifier for the component.
-  string ComponentId = 3;
-
-  // AssessmentID is the identifier for the assessment.
-  string AssessmentID = 4;
+  string ComponentId = 4;
 
   // Config is a map that contains configuration data.
   // This is used to pass configuration data to the action before each run.

@@ -57,18 +57,57 @@ func (pm *Assessment) Init() error {
 			Cmd:              exec.Command(packagePath),
 			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolGRPC},
 		})
-		pm.clients[pkg] = client
+
+		for _, plugin := range plugins {
+			pm.clients[plugin.Name] = client
+		}
 	}
 
 	return nil
 }
 
-func (pm *Assessment) Execute(name string, input ActionInput) error {
+func (pm *Assessment) Run() error {
+	var wg sync.WaitGroup
+
+	for _, plugin := range pm.cfg.Plugins {
+		wg.Add(1)
+		go func(pluginName string) {
+			defer wg.Done()
+
+			for _, pluginConfig := range pm.cfg.Plugins {
+				if pluginConfig.Name != pluginName {
+					continue
+				}
+
+				input := ActionInput{
+					AssessmentId: pm.cfg.AssessmentId,
+					SSPId:        pm.cfg.SSPId,
+					ControlId:    pm.cfg.ControlId,
+					ComponentId:  pm.cfg.ComponentId,
+					Config:       pluginConfig.Configuration,
+					Parameters:   pluginConfig.Parameters,
+				}
+
+				output, err := pm.executePlugin(pluginName, input)
+				if err != nil {
+					log.WithField("plugin", pluginName).Error(err)
+				}
+			}
+
+		}(plugin.Name)
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+func (pm *Assessment) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
 	client, ok := pm.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
 		log.WithField("plugin", name).Error(err)
-		return err
+		return nil, err
 	}
 
 	grpcClient, err := client.Client()
@@ -77,7 +116,7 @@ func (pm *Assessment) Execute(name string, input ActionInput) error {
 			"plugin": name,
 			"error":  err,
 		}).Error("Failed to get GRPC client for plugin")
-		return err
+		return nil, err
 	}
 
 	raw, err := grpcClient.Dispense(name)
@@ -86,7 +125,7 @@ func (pm *Assessment) Execute(name string, input ActionInput) error {
 			"plugin": name,
 			"error":  err,
 		}).Error("Failed to dispense plugin")
-		return err
+		return nil, err
 	}
 
 	plugin := raw.(Plugin)
@@ -96,14 +135,14 @@ func (pm *Assessment) Execute(name string, input ActionInput) error {
 			"plugin": name,
 			"error":  err,
 		}).Error("Failed to execute plugin")
-		return err
+		return nil, err
 	}
 	log.WithFields(log.Fields{
 		"plugin": name,
 		"output": output,
 	}).Info("Plugin executed successfully")
 
-	return nil
+	return output, nil
 }
 
 func (pm *Assessment) Stop() {
