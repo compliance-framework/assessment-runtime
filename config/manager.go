@@ -97,6 +97,10 @@ func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
 	return pluginInfos, nil
 }
 
+func (cm *ConfigurationManager) AssessmentConfigs() []AssessmentConfig {
+	return cm.assessmentConfigs
+}
+
 func (cm *ConfigurationManager) validate() error {
 	if cm.config.RuntimeId == "" {
 		return ConfigurationError("runtimeId is empty")

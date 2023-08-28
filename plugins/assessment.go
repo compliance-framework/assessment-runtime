@@ -14,24 +14,24 @@ import (
 type Assessment struct {
 	cfg     config.AssessmentConfig
 	clients map[string]*goplugin.Client
+	outputs map[string]*ActionOutput
 }
 
-func NewAssessment(cfg config.AssessmentConfig) *Assessment {
-	return &Assessment{
+func NewAssessment(cfg config.AssessmentConfig) (*Assessment, error) {
+	a := &Assessment{
 		cfg:     cfg,
 		clients: make(map[string]*goplugin.Client),
+		outputs: make(map[string]*ActionOutput),
 	}
-}
 
-func (pm *Assessment) Init() error {
 	pluginMap := make(map[string][]config.PluginConfig)
-	for _, plugin := range pm.cfg.Plugins {
+	for _, plugin := range a.cfg.Plugins {
 		pluginMap[plugin.Package] = append(pluginMap[plugin.Package], plugin)
 	}
 
 	ex, err := os.Executable()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for pkg, plugins := range pluginMap {
@@ -59,39 +59,40 @@ func (pm *Assessment) Init() error {
 		})
 
 		for _, plugin := range plugins {
-			pm.clients[plugin.Name] = client
+			a.clients[plugin.Name] = client
 		}
 	}
 
-	return nil
+	return a, nil
 }
 
-func (pm *Assessment) Run() error {
+func (a *Assessment) Run() error {
 	var wg sync.WaitGroup
 
-	for _, plugin := range pm.cfg.Plugins {
+	for _, plugin := range a.cfg.Plugins {
 		wg.Add(1)
 		go func(pluginName string) {
 			defer wg.Done()
 
-			for _, pluginConfig := range pm.cfg.Plugins {
+			for _, pluginConfig := range a.cfg.Plugins {
 				if pluginConfig.Name != pluginName {
 					continue
 				}
 
 				input := ActionInput{
-					AssessmentId: pm.cfg.AssessmentId,
-					SSPId:        pm.cfg.SSPId,
-					ControlId:    pm.cfg.ControlId,
-					ComponentId:  pm.cfg.ComponentId,
+					AssessmentId: a.cfg.AssessmentId,
+					SSPId:        a.cfg.SSPId,
+					ControlId:    a.cfg.ControlId,
+					ComponentId:  a.cfg.ComponentId,
 					Config:       pluginConfig.Configuration,
 					Parameters:   pluginConfig.Parameters,
 				}
 
-				output, err := pm.executePlugin(pluginName, input)
+				output, err := a.executePlugin(pluginName, input)
 				if err != nil {
 					log.WithField("plugin", pluginName).Error(err)
 				}
+				a.outputs[pluginName] = output
 			}
 
 		}(plugin.Name)
@@ -102,8 +103,8 @@ func (pm *Assessment) Run() error {
 	return nil
 }
 
-func (pm *Assessment) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
-	client, ok := pm.clients[name]
+func (a *Assessment) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
+	client, ok := a.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
 		log.WithField("plugin", name).Error(err)
@@ -145,10 +146,10 @@ func (pm *Assessment) executePlugin(name string, input ActionInput) (*ActionOutp
 	return output, nil
 }
 
-func (pm *Assessment) Stop() {
+func (a *Assessment) Stop() {
 	var wg sync.WaitGroup
 
-	for _, client := range pm.clients {
+	for _, client := range a.clients {
 		wg.Add(1)
 		go func(c *goplugin.Client) {
 			defer wg.Done()

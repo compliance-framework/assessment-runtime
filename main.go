@@ -50,30 +50,8 @@ func main() {
 		// TODO: If the download error keeps occurring, we should report it back to the control plane.
 	}
 
-	//pluginManager := plugins.NewAssessment(cfg)
-	//
-	//err = pluginManager.Init()
-	//if err != nil {
-	//	log.Errorf("Error starting plugins: %s", err)
-	//}
+	scheduler := plugins.NewScheduler(confManager.AssessmentConfigs())
+	scheduler.Start()
 
-	//scheduler := plugins.NewScheduler()
-	//for _, plugin := range cfg.Plugins {
-	//	scheduler.AddJob(plugin.Schedule, func() {
-	//		// TODO: This should come from the control plane. We're just simulating it for now.
-	//		err := pluginManager.executePlugin(plugin.Name, plugins.ActionInput{
-	//			SSPId:        "123",
-	//			ControlId:    "123",
-	//			ComponentId:  "123",
-	//			AssessmentId: "123",
-	//		})
-	//		if err != nil {
-	//			log.Errorf("Error starting plugin %s: %s", plugin.Name, err)
-	//			return
-	//		}
-	//	})
-	//}
-	//scheduler.Init()
-	//
 	select {}
 }
