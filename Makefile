@@ -57,3 +57,6 @@ start:
 	chmod +x bin/plugins/sample/1.0.0/sample
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	cp ./tests/runtime/config.yml ./bin/config.yml
+
+protoc:
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
