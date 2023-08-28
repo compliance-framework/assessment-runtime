@@ -5,6 +5,12 @@ services:
       dockerfile: tests/registry/Dockerfile
     ports:
       - "3000:3000"
+  nats:
+    image: nats:latest
+    volumes:
+      - ${PWD}/tests/messaging/nats-server.conf:/nats-server.conf
+    ports:
+      - "4222:4222"
   assessment-runtime:
     build:
       context: ../
