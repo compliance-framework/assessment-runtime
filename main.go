@@ -47,7 +47,13 @@ func main() {
 	scheduler := plugins.NewScheduler()
 	for _, plugin := range cfg.Plugins {
 		scheduler.AddJob(plugin.Schedule, func() {
-			err := pluginManager.Execute(plugin.Name, plugins.ActionInput{})
+			// TODO: This should come from the control plane. We're just simulating it for now.
+			err := pluginManager.Execute(plugin.Name, plugins.ActionInput{
+				SSPId:        "123",
+				ControlId:    "123",
+				ComponentId:  "123",
+				AssessmentID: "123",
+			})
 			if err != nil {
 				log.Errorf("Error starting plugin %s: %s", plugin.Name, err)
 				return

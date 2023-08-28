@@ -9,10 +9,11 @@ type Config struct {
 
 // PluginConfig represents a plugins configuration.
 type PluginConfig struct {
-	Name     string `yaml:"name" json:"name"`
-	Version  string `yaml:"version" json:"version"`
-	Package  string `yaml:"package" json:"package"`
-	Schedule string `yaml:"schedule" json:"schedule"`
+	Name     string                 `yaml:"name" json:"name"`
+	Version  string                 `yaml:"version" json:"version"`
+	Package  string                 `yaml:"package" json:"package"`
+	Schedule string                 `yaml:"schedule" json:"schedule"`
+	Config   map[string]interface{} `yaml:"config" json:"config"`
 }
 
 type PluginPackageConfig struct {

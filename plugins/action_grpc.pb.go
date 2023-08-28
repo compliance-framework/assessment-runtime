@@ -26,6 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ActionServiceClient interface {
+	// Execute is a method that takes an ActionInput and returns an ActionOutput.
 	Execute(ctx context.Context, in *ActionInput, opts ...grpc.CallOption) (*ActionOutput, error)
 }
 
@@ -50,6 +51,7 @@ func (c *actionServiceClient) Execute(ctx context.Context, in *ActionInput, opts
 // All implementations should embed UnimplementedActionServiceServer
 // for forward compatibility
 type ActionServiceServer interface {
+	// Execute is a method that takes an ActionInput and returns an ActionOutput.
 	Execute(context.Context, *ActionInput) (*ActionOutput, error)
 }
 
