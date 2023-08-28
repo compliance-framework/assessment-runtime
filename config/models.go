@@ -9,23 +9,18 @@ type Config struct {
 }
 
 type AssessmentConfig struct {
-	AssessmentID string         `yaml:"assessment-id" json:"assessmentId"`
-	SspID        string         `yaml:"ssp-id" json:"sspId"`
-	ControlID    string         `yaml:"control-id" json:"controlId"`
-	ComponentID  string         `yaml:"component-id" json:"componentId"`
+	AssessmentId string         `yaml:"assessment-id" json:"assessmentId"`
+	SSPId        string         `yaml:"ssp-id" json:"sspId"`
+	ControlId    string         `yaml:"control-id" json:"controlId"`
+	ComponentId  string         `yaml:"component-id" json:"componentId"`
 	Schedule     string         `yaml:"schedule" json:"schedule"`
 	Plugins      []PluginConfig `yaml:"plugins" json:"plugins"`
 }
 
 type PluginConfig struct {
-	Name          string  `yaml:"name" json:"name"`
-	Package       string  `yaml:"package" json:"package"`
-	Version       string  `yaml:"version" json:"version"`
-	Configuration []Entry `yaml:"configuration" json:"configuration"`
-	Parameters    []Entry `yaml:"parameters" json:"parameters"`
-}
-
-type Entry struct {
-	Name  string `yaml:"name" json:"name"`
-	Value string `yaml:"value" json:"value"`
+	Name          string            `yaml:"name" json:"name"`
+	Package       string            `yaml:"package" json:"package"`
+	Version       string            `yaml:"version" json:"version"`
+	Configuration map[string]string `yaml:"configuration" json:"configuration"`
+	Parameters    map[string]string `yaml:"parameters" json:"parameters"`
 }
