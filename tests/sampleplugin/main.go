@@ -25,6 +25,6 @@ func (p *SamplePlugin) Shutdown(ctx context.Context) error {
 
 func main() {
 	plugins.Register(map[string]plugins.Plugin{
-		"sample": &SamplePlugin{},
+		"do-nothing": &SamplePlugin{},
 	})
 }

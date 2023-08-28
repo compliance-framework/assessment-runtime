@@ -18,11 +18,11 @@ func TestStart(t *testing.T) {
 		},
 	}
 
-	pm := NewPluginManager(cfg)
-	err := pm.Start()
+	pm := NewAssessment(cfg)
+	err := pm.Init()
 
 	if err != nil {
-		t.Errorf("Start method returned an error: %v", err)
+		t.Errorf("Init method returned an error: %v", err)
 	}
 
 	if len(pm.clients) == 0 {
