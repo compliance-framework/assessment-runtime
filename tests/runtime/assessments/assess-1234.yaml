@@ -24,14 +24,12 @@ plugins:
     # given that each plugin could be used in different assessments
     # with varying configurations.
     configuration:
-        - name: "configA"
-          value: "valueA"
-        - name: "configB"
-          value: "valueB"
+      config1: "value1"
+      config2: "value2"
+      config3: "value3"
 
     # Parameters to be passed to the assessment, same as the configuration`
     parameters:
-        - name: "paramX"
-          value: "valueX"
-        - name: "paramY"
-          value: "valueY"
+      param1: "value1"
+      param2: "value2"
+      param3: "value3"
