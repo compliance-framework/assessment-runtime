@@ -22,6 +22,7 @@ WORKDIR /app
 COPY --from=builder /runtime ./runtime
 
 COPY tests/runtime/config.yml .
+COPY tests/runtime/assessments/* ./assessments/
 
 # Run
 CMD ["./runtime"]
