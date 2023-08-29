@@ -3,55 +3,53 @@ BINARY_NAME=ar
 CONFIG=configs/config.yaml
 GO=go
 
-.PHONY: all build test clean
+.PHONY: help build test clean fmt vet lint build-images compose-up compose-down start
 
-# Default target to build the application
-all: build
+help:  ## This help
+	@echo "Help for Makefile: $(MAKEFILE_LIST) in $(dir $(abspath $(lastword $(MAKEFILE_LIST))))"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-# Build the Go application
-build:
+build:  ## Build the Go application
 	@echo "Building $(BINARY_NAME)..."
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 
-run:
+run:  ## Run the assessment-runtime binary
 	@echo "Running $(BINARY_NAME)..."
 	@$(GO) run ./
 
-# Run unit tests
-test:
+test:  ## Run unit tests
 	@echo "Running tests..."
 	@$(GO) test -v ./...
 
-# Clean up binaries and test caches
-clean:
+clean:  ## Clean up binaries and test caches
 	@echo "Cleaning up..."
 	@$(GO) clean
 	@rm -rf ./cmd/bin
 	@rm -rf test-results
 
-fmt:
+fmt:  ## Format the code
 	@echo "Formatting code..."
 	@$(GO) fmt ./...
 
-vet:
+vet:  ## Vet the code
 	@echo "Running vet..."
 	@$(GO) vet ./...
 
-lint:
+lint:  ## Lint the code
 	@echo "Running lint..."
 	@golint ./...
 
-build-images:
+build-images:  ## Build Docker images
 	docker build -t plugin-registry ./tests/registry
 	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
 
-compose-up:
+compose-up:  ## Run up test environment
 	docker compose -f ./tests/docker-compose.yml up --build
 
-compose-down:
+compose-down:  ## Bring down test environment
 	docker compose -f ./tests/docker-compose.yml down
 
-build-plugin:
+build-plugin: ## Build sample plugin and copy to bin along with config and assessment
 	mkdir -p bin/plugins/sample/1.0.0
 	mkdir -p bin/assessments
 
@@ -61,5 +59,5 @@ build-plugin:
 	cp ./tests/runtime/config.yml ./bin/config.yml
 	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
 
-protoc:
+protoc: ## Generate protobuf files
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
