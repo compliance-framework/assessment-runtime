@@ -18,43 +18,63 @@ type ConfigurationManager struct {
 	assessmentConfigs []AssessmentConfig
 }
 
-func NewConfigurationManager() *ConfigurationManager {
-	return &ConfigurationManager{}
+func NewConfigurationManager() (*ConfigurationManager, error) {
+	execPath, err := os.Executable()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get executable path: %w", err)
+	}
+	execDir := filepath.Dir(execPath)
+
+	configPath := filepath.Join(execDir, "config.yml")
+	assessmentPath := filepath.Join(execDir, "assessments")
+
+	cm := &ConfigurationManager{}
+
+	if err := cm.loadConfig(configPath); err != nil {
+		return nil, err
+	}
+
+	if err := cm.loadAssessmentConfigs(assessmentPath); err != nil {
+		return nil, err
+	}
+
+	return cm, nil
 }
 
-func (cm *ConfigurationManager) LoadConfig(path string) (Config, error) {
+func (cm *ConfigurationManager) loadConfig(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to open config file: %w", err)
+		return fmt.Errorf("failed to open config file: %w", err)
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to read config file: %w", err)
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, &cm.config)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to unmarshal yaml data: %w", err)
+		return fmt.Errorf("failed to unmarshal yaml data: %w", err)
 	}
 
 	err = cm.validate()
 	if err != nil {
-		return cm.config, fmt.Errorf("config validation failed: %w", err)
+		return fmt.Errorf("config validation failed: %w", err)
 	}
 
-	return cm.config, nil
+	return nil
 }
 
-func (cm *ConfigurationManager) LoadAssessmentConfigs(path string) error {
+func (cm *ConfigurationManager) loadAssessmentConfigs(path string) error {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to read directory: %w", err)
 	}
 
 	for _, file := range files {
-		if filepath.Ext(file.Name()) == ".yaml" || filepath.Ext(file.Name()) == ".yml" {
+		fileExt := filepath.Ext(file.Name())
+		if fileExt == ".yaml" || fileExt == ".yml" {
 			data, err := os.ReadFile(filepath.Join(path, file.Name()))
 			if err != nil {
 				return fmt.Errorf("failed to read file: %w", err)
@@ -73,6 +93,10 @@ func (cm *ConfigurationManager) LoadAssessmentConfigs(path string) error {
 	return nil
 }
 
+func (cm *ConfigurationManager) Config() Config {
+	return cm.config
+}
+
 func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
 	pluginInfoMap := make(map[string]internal.PackageInfo)
 
@@ -89,7 +113,7 @@ func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
 		}
 	}
 
-	var pluginInfos []internal.PackageInfo
+	pluginInfos := make([]internal.PackageInfo, 0, len(pluginInfoMap))
 	for _, info := range pluginInfoMap {
 		pluginInfos = append(pluginInfos, info)
 	}
@@ -97,7 +121,7 @@ func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
 	return pluginInfos, nil
 }
 
-func (cm *ConfigurationManager) AssessmentConfigs() []AssessmentConfig {
+func (cm *ConfigurationManager) Assessments() []AssessmentConfig {
 	return cm.assessmentConfigs
 }
 
