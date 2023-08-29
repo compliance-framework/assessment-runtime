@@ -6,9 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/compliance-framework/assessment-runtime/internal"
+	"gopkg.in/yaml.v3"
 )
 
 type ConfigurationError string
@@ -97,14 +96,14 @@ func (cm *ConfigurationManager) Config() Config {
 	return cm.config
 }
 
-func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
-	pluginInfoMap := make(map[string]internal.PackageInfo)
+func (cm *ConfigurationManager) Packages() ([]runtime.PackageInfo, error) {
+	pluginInfoMap := make(map[string]runtime.PackageInfo)
 
 	for _, config := range cm.assessmentConfigs {
 		for _, plugin := range config.Plugins {
 			key := plugin.Package + plugin.Version
 			if _, exists := pluginInfoMap[key]; !exists {
-				info := internal.PackageInfo{
+				info := runtime.PackageInfo{
 					Name:    plugin.Package,
 					Version: plugin.Version,
 				}
@@ -113,7 +112,7 @@ func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
 		}
 	}
 
-	pluginInfos := make([]internal.PackageInfo, 0, len(pluginInfoMap))
+	pluginInfos := make([]runtime.PackageInfo, 0, len(pluginInfoMap))
 	for _, info := range pluginInfoMap {
 		pluginInfos = append(pluginInfos, info)
 	}

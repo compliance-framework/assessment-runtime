@@ -39,13 +39,13 @@ func NewPackageDownloader(registryURL string) *PackageDownloader {
 	}
 }
 
-func (m *PackageDownloader) DownloadPackages(packages []internal.PackageInfo) error {
+func (m *PackageDownloader) DownloadPackages(packages []runtime.PackageInfo) error {
 	var wg sync.WaitGroup
 	var errorCh = make(chan error)
 
 	for _, pkg := range packages {
 		wg.Add(1)
-		go func(p internal.PackageInfo) {
+		go func(p runtime.PackageInfo) {
 			defer wg.Done()
 			log.WithFields(log.Fields{
 				"package": p.Name,
@@ -81,7 +81,7 @@ func (m *PackageDownloader) DownloadPackages(packages []internal.PackageInfo) er
 	return nil
 }
 
-func (m *PackageDownloader) downloadPackage(p internal.PackageInfo) error {
+func (m *PackageDownloader) downloadPackage(p runtime.PackageInfo) error {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
