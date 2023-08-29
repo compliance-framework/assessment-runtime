@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/compliance-framework/assessment-runtime/internal"
 )
 
 type ConfigurationError string
 
 type ConfigurationManager struct {
-	config Config
+	config            Config
+	assessmentConfigs []AssessmentConfig
 }
 
 func NewConfigurationManager() *ConfigurationManager {
@@ -43,19 +47,75 @@ func (cm *ConfigurationManager) LoadConfig(path string) (Config, error) {
 	return cm.config, nil
 }
 
+func (cm *ConfigurationManager) LoadAssessmentConfigs(path string) error {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("failed to read directory: %w", err)
+	}
+
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ".yaml" || filepath.Ext(file.Name()) == ".yml" {
+			data, err := os.ReadFile(filepath.Join(path, file.Name()))
+			if err != nil {
+				return fmt.Errorf("failed to read file: %w", err)
+			}
+
+			var config AssessmentConfig
+			err = yaml.Unmarshal(data, &config)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal yaml data: %w", err)
+			}
+
+			cm.assessmentConfigs = append(cm.assessmentConfigs, config)
+		}
+	}
+
+	return nil
+}
+
+func (cm *ConfigurationManager) Packages() ([]internal.PackageInfo, error) {
+	pluginInfoMap := make(map[string]internal.PackageInfo)
+
+	for _, config := range cm.assessmentConfigs {
+		for _, plugin := range config.Plugins {
+			key := plugin.Package + plugin.Version
+			if _, exists := pluginInfoMap[key]; !exists {
+				info := internal.PackageInfo{
+					Name:    plugin.Package,
+					Version: plugin.Version,
+				}
+				pluginInfoMap[key] = info
+			}
+		}
+	}
+
+	var pluginInfos []internal.PackageInfo
+	for _, info := range pluginInfoMap {
+		pluginInfos = append(pluginInfos, info)
+	}
+
+	return pluginInfos, nil
+}
+
+func (cm *ConfigurationManager) AssessmentConfigs() []AssessmentConfig {
+	return cm.assessmentConfigs
+}
+
 func (cm *ConfigurationManager) validate() error {
+	if cm.config.RuntimeId == "" {
+		return ConfigurationError("runtimeId is empty")
+	}
+
 	if cm.config.ControlPlaneURL == "" {
 		return ConfigurationError("controlPlaneAPI is empty")
 	}
 
-	for _, plugin := range cm.config.Plugins {
-		if plugin.Name == "" {
-			return ConfigurationError("plugin name is empty")
-		}
-		// The plugin version matches the package version
-		if plugin.Version == "" {
-			return ConfigurationError(fmt.Sprintf("plugin version for '%s' is empty", plugin.Name))
-		}
+	if cm.config.PluginRegistryURL == "" {
+		return ConfigurationError("pluginRegistryURL is empty")
+	}
+
+	if cm.config.EventBusURL == "" {
+		return ConfigurationError("eventBusURL is empty")
 	}
 
 	return nil

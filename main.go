@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/compliance-framework/assessment-runtime/plugins"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 
 	"github.com/compliance-framework/assessment-runtime/config"
-	"github.com/compliance-framework/assessment-runtime/plugins"
 )
 
 func main() {
@@ -30,30 +30,27 @@ func main() {
 
 	log.Infof("Configuration loaded successfully: %v", cfg)
 
-	pluginDownloader := plugins.NewPluginDownloader(cfg)
-	err = pluginDownloader.DownloadPlugins()
+	// Load assessment configs
+	assessmentConfigsPath := filepath.Join(execDir, "assessments")
+	err = confManager.LoadAssessmentConfigs(assessmentConfigsPath)
+	if err != nil {
+		log.Fatalf("Failed to load assessment configs: %s", err)
+	}
+
+	// Download plugin packages
+	packages, err := confManager.Packages()
+	if err != nil {
+		log.Fatalf("Failed to get packages: %s", err)
+	}
+
+	pluginDownloader := plugins.NewPackageDownloader(cfg.PluginRegistryURL)
+	err = pluginDownloader.DownloadPackages(packages)
 	if err != nil {
 		log.Errorf("Error downloading some of the plugins: %s", err)
 		// TODO: If the download error keeps occurring, we should report it back to the control plane.
 	}
 
-	pluginManager := plugins.NewPluginManager(cfg)
-
-	err = pluginManager.Start()
-	if err != nil {
-		log.Errorf("Error starting plugins: %s", err)
-	}
-
-	scheduler := plugins.NewScheduler()
-	for _, plugin := range cfg.Plugins {
-		scheduler.AddJob(plugin.Schedule, func() {
-			err := pluginManager.Execute(plugin.Name, plugins.ActionInput{})
-			if err != nil {
-				log.Errorf("Error starting plugin %s: %s", plugin.Name, err)
-				return
-			}
-		})
-	}
+	scheduler := plugins.NewScheduler(confManager.AssessmentConfigs())
 	scheduler.Start()
 
 	select {}

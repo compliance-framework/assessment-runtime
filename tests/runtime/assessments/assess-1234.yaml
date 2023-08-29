@@ -1,0 +1,35 @@
+# Unique identifier for the assessment
+assessment-id: "assess-1234"
+
+# System Security Plan ID
+ssp-id: "ssp-5678"
+
+# Control ID
+control-id: "ctrl-9101"
+
+# Component ID
+component-id: "comp-1121"
+
+# Schedule for the assessment to run in cron format
+schedule: "*/10 * * * * *"
+
+# List of plugins and their configurations
+plugins:
+  # Plugin details
+  - name: "do-nothing"
+    package: "sample"
+    version: "1.0.0"
+
+    # The configuration should be passed to the assessment,
+    # given that each plugin could be used in different assessments
+    # with varying configurations.
+    configuration:
+      config1: "value1"
+      config2: "value2"
+      config3: "value3"
+
+    # Parameters to be passed to the assessment, same as the configuration`
+    parameters:
+      param1: "value1"
+      param2: "value2"
+      param3: "value3"

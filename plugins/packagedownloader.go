@@ -10,15 +10,15 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/internal"
 )
 
-type PluginDownloader struct {
-	cfg    config.Config
-	client *http.Client
+type PackageDownloader struct {
+	registryURL string
+	client      *http.Client
 }
 
-func NewPluginDownloader(cfg config.Config) *PluginDownloader {
+func NewPackageDownloader(registryURL string) *PackageDownloader {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -33,26 +33,33 @@ func NewPluginDownloader(cfg config.Config) *PluginDownloader {
 		}
 	}
 
-	return &PluginDownloader{
-		cfg:    cfg,
-		client: &http.Client{},
+	return &PackageDownloader{
+		registryURL: registryURL,
+		client:      &http.Client{},
 	}
 }
 
-func (m *PluginDownloader) DownloadPlugins() error {
+func (m *PackageDownloader) DownloadPackages(packages []internal.PackageInfo) error {
 	var wg sync.WaitGroup
 	var errorCh = make(chan error)
 
-	for _, plugin := range m.cfg.Plugins {
+	for _, pkg := range packages {
 		wg.Add(1)
-		go func(p config.PluginConfig) {
+		go func(p internal.PackageInfo) {
 			defer wg.Done()
-			if err := m.downloadPlugin(p); err != nil {
+			log.WithFields(log.Fields{
+				"package": p.Name,
+				"version": p.Version,
+			}).Info("Downloading package")
+			if err := m.downloadPackage(p); err != nil {
 				errorCh <- err
 			} else {
-				log.Infof("Downloaded plugin: %s", p.Name)
+				log.WithFields(log.Fields{
+					"package": p.Name,
+					"version": p.Version,
+				}).Info("Downloaded package")
 			}
-		}(plugin)
+		}(pkg)
 	}
 
 	go func() {
@@ -74,7 +81,7 @@ func (m *PluginDownloader) DownloadPlugins() error {
 	return nil
 }
 
-func (m *PluginDownloader) downloadPlugin(p config.PluginConfig) error {
+func (m *PackageDownloader) downloadPackage(p internal.PackageInfo) error {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -90,7 +97,7 @@ func (m *PluginDownloader) downloadPlugin(p config.PluginConfig) error {
 		}
 	}
 
-	resp, err := m.client.Get(fmt.Sprintf("%s/%s/%s/%s", m.cfg.PluginRegistryURL, p.Name, p.Version, p.Name))
+	resp, err := m.client.Get(fmt.Sprintf("%s/%s/%s/%s", m.registryURL, p.Name, p.Version, p.Name))
 	if err != nil {
 		return err
 	}

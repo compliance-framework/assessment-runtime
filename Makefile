@@ -51,9 +51,15 @@ compose-up:
 compose-down:
 	docker compose -f ./tests/docker-compose.yml down
 
-start:
+build-plugin:
 	mkdir -p bin/plugins/sample/1.0.0
+	mkdir -p bin/assessments
+
 	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
 	chmod +x bin/plugins/sample/1.0.0/sample
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	cp ./tests/runtime/config.yml ./bin/config.yml
+	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
+
+protoc:
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
