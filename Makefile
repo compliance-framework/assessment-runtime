@@ -49,7 +49,7 @@ compose-up:  ## Run up test environment
 compose-down:  ## Bring down test environment
 	docker compose -f ./tests/docker-compose.yml down
 
-build-plugin:
+build-plugin: ## Build sample plugin and copy to bin along with config and assessment
 	mkdir -p bin/plugins/sample/1.0.0
 	mkdir -p bin/assessments
 
@@ -59,5 +59,5 @@ build-plugin:
 	cp ./tests/runtime/config.yml ./bin/config.yml
 	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
 
-protoc:
+protoc: ## Generate protobuf files
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
