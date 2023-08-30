@@ -16,8 +16,8 @@ schedule: "*/10 * * * * *"
 # List of plugins and their configurations
 plugins:
   # Plugin details
-  - name: "do-nothing"
-    package: "sample"
+  - name: "busy-plugin"
+    package: "busy"
     version: "1.0.0"
 
     # The configuration should be passed to the assessment,
@@ -25,11 +25,21 @@ plugins:
     # with varying configurations.
     configuration:
       config1: "value1"
-      config2: "value2"
-      config3: "value3"
 
     # Parameters to be passed to the assessment, same as the configuration`
     parameters:
       param1: "value1"
-      param2: "value2"
-      param3: "value3"
+
+  - name: "hello-plugin"
+    package: "hello"
+    version: "1.0.0"
+
+    # The configuration should be passed to the assessment,
+    # given that each plugin could be used in different assessments
+    # with varying configurations.
+    configuration:
+      config1: "value1"
+
+    # Parameters to be passed to the assessment, same as the configuration`
+    parameters:
+      param1: "value1"

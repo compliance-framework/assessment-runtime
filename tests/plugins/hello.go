@@ -3,18 +3,19 @@ package main
 import (
 	"context"
 	"github.com/compliance-framework/assessment-runtime/plugins"
-	structpb "google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type SamplePlugin struct{}
+type Hello struct {
+}
 
-func (p *SamplePlugin) Init() error {
+func (p *Hello) Init() error {
 	return nil
 }
 
-func (p *SamplePlugin) Execute(in *plugins.ActionInput) (*plugins.ActionOutput, error) {
+func (p *Hello) Execute(_ *plugins.ActionInput) (*plugins.ActionOutput, error) {
 	data := map[string]interface{}{
-		"foo": "bar",
+		"message": "Hello World",
 	}
 	s, err := structpb.NewStruct(data)
 	if err != nil {
@@ -25,12 +26,12 @@ func (p *SamplePlugin) Execute(in *plugins.ActionInput) (*plugins.ActionOutput, 
 	}, nil
 }
 
-func (p *SamplePlugin) Shutdown(ctx context.Context) error {
+func (p *Hello) Shutdown(ctx context.Context) error {
 	return nil
 }
 
 func main() {
 	plugins.Register(map[string]plugins.Plugin{
-		"do-nothing": &SamplePlugin{},
+		"hello-plugin": &Hello{},
 	})
 }

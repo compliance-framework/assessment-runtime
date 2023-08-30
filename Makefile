@@ -50,11 +50,15 @@ compose-down:  ## Bring down test environment
 	docker compose -f ./tests/docker-compose.yml down
 
 build-plugin: ## Build sample plugin and copy to bin along with config and assessment
-	mkdir -p bin/plugins/sample/1.0.0
+	rm -rf bin
+	mkdir -p bin/plugins/busy/1.0.0
+	mkdir -p bin/plugins/hello/1.0.0
 	mkdir -p bin/assessments
 
-	go build -o bin/plugins/sample/1.0.0/sample ./tests/sampleplugin/main.go
-	chmod +x bin/plugins/sample/1.0.0/sample
+	go build -o bin/plugins/busy/1.0.0/busy ./tests/plugins/busy.go
+	go build -o bin/plugins/hello/1.0.0/hello ./tests/plugins/hello.go
+	chmod +x bin/plugins/busy/1.0.0/busy
+	chmod +x bin/plugins/hello/1.0.0/hello
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	cp ./tests/runtime/config.yml ./bin/config.yml
 	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
