@@ -18,7 +18,7 @@ func TestStart(t *testing.T) {
 		},
 	}
 
-	pm := NewAssessment(cfg)
+	pm := NewAssessmentRunner(cfg)
 	err := pm.Init()
 
 	if err != nil {

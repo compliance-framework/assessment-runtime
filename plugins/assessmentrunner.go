@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"context"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/config"
 	goplugin "github.com/hashicorp/go-plugin"
@@ -11,19 +12,95 @@ import (
 	"sync"
 )
 
-type Assessment struct {
+type AssessmentRunner struct {
 	cfg     config.AssessmentConfig
 	clients map[string]*goplugin.Client
-	outputs map[string]*ActionOutput
 }
 
-func NewAssessment(cfg config.AssessmentConfig) (*Assessment, error) {
-	a := &Assessment{
+func NewAssessmentRunner(cfg config.AssessmentConfig) (*AssessmentRunner, error) {
+	a := &AssessmentRunner{
 		cfg:     cfg,
 		clients: make(map[string]*goplugin.Client),
-		outputs: make(map[string]*ActionOutput),
 	}
 
+	err := a.loadPlugins()
+	if err != nil {
+		return nil, err
+	}
+
+	return a, nil
+}
+
+func (a *AssessmentRunner) Run(ctx context.Context) (map[string]*ActionOutput, error) {
+	outputs := make(map[string]*ActionOutput)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	for _, plugin := range a.cfg.Plugins {
+		wg.Add(1)
+		go func(pluginName string) {
+			defer wg.Done()
+
+			for _, pluginConfig := range a.cfg.Plugins {
+				if pluginConfig.Name != pluginName {
+					continue
+				}
+
+				select {
+				case <-ctx.Done():
+					mu.Lock()
+					outputs[pluginName] = &ActionOutput{
+						Error: fmt.Errorf("execution cancelled").Error(),
+					}
+					mu.Unlock()
+					return
+				default:
+					input := ActionInput{
+						AssessmentId: a.cfg.AssessmentId,
+						SSPId:        a.cfg.SSPId,
+						ControlId:    a.cfg.ControlId,
+						ComponentId:  a.cfg.ComponentId,
+						Config:       pluginConfig.Configuration,
+						Parameters:   pluginConfig.Parameters,
+					}
+
+					output, err := a.executePlugin(pluginName, input)
+					mu.Lock()
+					if err != nil {
+						outputs[pluginName] = &ActionOutput{
+							Error: err.Error(),
+						}
+						log.WithField("plugin", pluginName).Error(err)
+					} else {
+						outputs[pluginName] = output
+					}
+					mu.Unlock()
+				}
+			}
+
+		}(plugin.Name)
+	}
+
+	wg.Wait()
+
+	return outputs, nil
+}
+
+func (a *AssessmentRunner) Stop() {
+	var wg sync.WaitGroup
+
+	for _, client := range a.clients {
+		wg.Add(1)
+		go func(c *goplugin.Client) {
+			defer wg.Done()
+			c.Kill()
+		}(client)
+	}
+
+	wg.Wait()
+}
+
+func (a *AssessmentRunner) loadPlugins() error {
 	pluginMap := make(map[string][]config.PluginConfig)
 	for _, plugin := range a.cfg.Plugins {
 		pluginMap[plugin.Package] = append(pluginMap[plugin.Package], plugin)
@@ -31,7 +108,7 @@ func NewAssessment(cfg config.AssessmentConfig) (*Assessment, error) {
 
 	ex, err := os.Executable()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for pkg, plugins := range pluginMap {
@@ -63,47 +140,10 @@ func NewAssessment(cfg config.AssessmentConfig) (*Assessment, error) {
 		}
 	}
 
-	return a, nil
-}
-
-func (a *Assessment) Run() error {
-	var wg sync.WaitGroup
-
-	for _, plugin := range a.cfg.Plugins {
-		wg.Add(1)
-		go func(pluginName string) {
-			defer wg.Done()
-
-			for _, pluginConfig := range a.cfg.Plugins {
-				if pluginConfig.Name != pluginName {
-					continue
-				}
-
-				input := ActionInput{
-					AssessmentId: a.cfg.AssessmentId,
-					SSPId:        a.cfg.SSPId,
-					ControlId:    a.cfg.ControlId,
-					ComponentId:  a.cfg.ComponentId,
-					Config:       pluginConfig.Configuration,
-					Parameters:   pluginConfig.Parameters,
-				}
-
-				output, err := a.executePlugin(pluginName, input)
-				if err != nil {
-					log.WithField("plugin", pluginName).Error(err)
-				}
-				a.outputs[pluginName] = output
-			}
-
-		}(plugin.Name)
-	}
-
-	wg.Wait()
-
 	return nil
 }
 
-func (a *Assessment) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
+func (a *AssessmentRunner) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
 	client, ok := a.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
@@ -144,18 +184,4 @@ func (a *Assessment) executePlugin(name string, input ActionInput) (*ActionOutpu
 	}).Info("Plugin executed successfully")
 
 	return output, nil
-}
-
-func (a *Assessment) Stop() {
-	var wg sync.WaitGroup
-
-	for _, client := range a.clients {
-		wg.Add(1)
-		go func(c *goplugin.Client) {
-			defer wg.Done()
-			c.Kill()
-		}(client)
-	}
-
-	wg.Wait()
 }
