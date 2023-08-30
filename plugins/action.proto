@@ -46,6 +46,8 @@ message ActionOutput {
 
   // ResultData is a Struct that contains the result data of the action.
   google.protobuf.Struct ResultData = 6;
+
+  string Error = 7;
 }
 
 // ActionService is a service that provides an Execute method for performing actions.
