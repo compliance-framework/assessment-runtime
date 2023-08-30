@@ -1,13 +1,28 @@
 package main
 
 import (
+	"context"
 	"github.com/compliance-framework/assessment-runtime/config"
 	"github.com/compliance-framework/assessment-runtime/plugins"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/signal"
+	"sync"
 )
 
 func main() {
+	var wg sync.WaitGroup
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt)
+	go func() {
+		<-sigCh
+		cancel()
+	}()
+
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
@@ -31,7 +46,15 @@ func main() {
 	}
 
 	scheduler := plugins.NewScheduler(confManager.Assessments())
-	scheduler.Start()
 
-	select {}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		scheduler.Start(ctx)
+	}()
+
+	<-ctx.Done()
+
+	// Wait for all components to finish their cleanup
+	wg.Wait()
 }
