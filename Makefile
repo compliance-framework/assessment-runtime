@@ -43,10 +43,10 @@ build-images:  ## Build Docker images
 	docker build -t plugin-registry ./tests/registry
 	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
 
-compose-up:  ## Run up test environment
+up:  ## Run up test environment
 	docker compose -f ./tests/docker-compose.yml up --build
 
-compose-down:  ## Bring down test environment
+down:  ## Bring down test environment
 	docker compose -f ./tests/docker-compose.yml down
 
 build-plugin: ## Build sample plugin and copy to bin along with config and assessment
