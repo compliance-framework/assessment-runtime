@@ -3,11 +3,10 @@ package plugins
 import (
 	"context"
 	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"sync/atomic"
 	"time"
-
-	"github.com/robfig/cron/v3"
 )
 
 type JobFunc func()
@@ -49,27 +48,15 @@ func (s *Scheduler) Start(ctx context.Context) {
 		}
 	}
 
-	go func() {
-		<-ctx.Done()
-		s.c.Stop()
-
-		// Try for n times and wait t seconds between each try.
-		n := 10
-		t := time.Second * 5
-		ticker := time.NewTicker(t)
-		defer ticker.Stop()
-
-		for i := 0; i < n; i++ {
-			select {
-			case <-ticker.C:
-				if atomic.LoadInt32(&s.runningAssessments) == 0 {
-					return
-				}
-			default:
-				continue
-			}
-		}
-	}()
-
 	s.c.Start()
+}
+
+func (s *Scheduler) Stop() {
+	// TODO: We should wait for all running assessments to finish before stopping the scheduler.
+	log.Info("Stopping scheduler")
+
+	// Add a sleep of 10 seconds
+	time.Sleep(10 * time.Second)
+
+	s.c.Stop()
 }

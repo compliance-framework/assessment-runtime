@@ -48,6 +48,7 @@ func (a *AssessmentRunner) Run(ctx context.Context) (map[string]*ActionOutput, e
 
 				select {
 				case <-ctx.Done():
+					log.WithField("plugin", pluginName).Info("Execution cancelled")
 					mu.Lock()
 					outputs[pluginName] = &ActionOutput{
 						Error: fmt.Errorf("execution cancelled").Error(),

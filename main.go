@@ -2,26 +2,22 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/compliance-framework/assessment-runtime/config"
 	"github.com/compliance-framework/assessment-runtime/plugins"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 )
 
 func main() {
-	var wg sync.WaitGroup
-
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt)
-	go func() {
-		<-sigCh
-		cancel()
-	}()
+	var wg sync.WaitGroup
 
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
@@ -55,6 +51,20 @@ func main() {
 
 	<-ctx.Done()
 
-	// Wait for all components to finish their cleanup
-	wg.Wait()
+	scheduler.Stop()
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		fmt.Println("Components have all shut down.")
+	case <-time.After(5 * time.Second):
+		fmt.Println("Timed out waiting for components to shut down; exiting anyway.")
+	}
+
+	os.Exit(0)
 }
