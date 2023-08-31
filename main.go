@@ -19,7 +19,6 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
 
