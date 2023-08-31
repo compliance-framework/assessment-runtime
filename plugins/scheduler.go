@@ -5,8 +5,7 @@ import (
 	"github.com/compliance-framework/assessment-runtime/config"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
-	"sync/atomic"
-	"time"
+	"sync"
 )
 
 type JobFunc func()
@@ -14,7 +13,7 @@ type JobFunc func()
 type Scheduler struct {
 	c                  *cron.Cron
 	configs            []config.AssessmentConfig
-	runningAssessments int32
+	runningAssessments sync.Map
 }
 
 func NewScheduler(assessmentConfigs []config.AssessmentConfig) *Scheduler {
@@ -39,12 +38,13 @@ func (s *Scheduler) Start(ctx context.Context) {
 				// TODO: We should report this back to the control plane.
 				return
 			}
-			atomic.AddInt32(&s.runningAssessments, 1)
+			s.runningAssessments.Store(assessmentConfig.AssessmentId, assessment)
 			assessment.Run(ctx)
-			atomic.AddInt32(&s.runningAssessments, -1)
+			assessment.Stop()
+			s.runningAssessments.Delete(assessmentConfig.AssessmentId)
 		})
 		if err != nil {
-			log.Fatal("Failed to add job:", err)
+			log.Fatal("failed to add job:", err)
 		}
 	}
 
@@ -52,11 +52,21 @@ func (s *Scheduler) Start(ctx context.Context) {
 }
 
 func (s *Scheduler) Stop() {
-	// TODO: We should wait for all running assessments to finish before stopping the scheduler.
-	log.Info("Stopping scheduler")
-
-	// Add a sleep of 10 seconds
-	time.Sleep(10 * time.Second)
-
 	s.c.Stop()
+
+	log.Info("stopping scheduler")
+
+	var wg sync.WaitGroup
+
+	s.runningAssessments.Range(func(key, value interface{}) bool {
+		wg.Add(1)
+		go func() {
+			assessment := value.(*AssessmentRunner)
+			assessment.Stop()
+			wg.Done()
+		}()
+		return true
+	})
+
+	wg.Wait()
 }

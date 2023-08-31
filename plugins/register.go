@@ -8,7 +8,6 @@ import (
 )
 
 func Register(plugins map[string]Plugin) {
-	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
 

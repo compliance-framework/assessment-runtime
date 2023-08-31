@@ -31,63 +31,60 @@ func NewAssessmentRunner(cfg config.AssessmentConfig) (*AssessmentRunner, error)
 	return a, nil
 }
 
-func (a *AssessmentRunner) Run(ctx context.Context) (map[string]*ActionOutput, error) {
+func (a *AssessmentRunner) Run(ctx context.Context) map[string]*ActionOutput {
 	outputs := make(map[string]*ActionOutput)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, plugin := range a.cfg.Plugins {
+	for _, pluginConfig := range a.cfg.Plugins {
 		wg.Add(1)
-		go func(pluginName string) {
+		go func(pluginConfig config.PluginConfig) {
 			defer wg.Done()
 
-			for _, pluginConfig := range a.cfg.Plugins {
-				if pluginConfig.Name != pluginName {
-					continue
+			pluginName := pluginConfig.Name
+
+			select {
+			case <-ctx.Done():
+				log.WithField("plugin", pluginName).Info("execution cancelled")
+				mu.Lock()
+				outputs[pluginName] = &ActionOutput{
+					Error: fmt.Errorf("execution cancelled").Error(),
+				}
+				mu.Unlock()
+				return
+			default:
+				input := ActionInput{
+					AssessmentId: a.cfg.AssessmentId,
+					SSPId:        a.cfg.SSPId,
+					ControlId:    a.cfg.ControlId,
+					ComponentId:  a.cfg.ComponentId,
+					Config:       pluginConfig.Configuration,
+					Parameters:   pluginConfig.Parameters,
 				}
 
-				select {
-				case <-ctx.Done():
-					log.WithField("plugin", pluginName).Info("Execution cancelled")
-					mu.Lock()
+				output, err := a.executePlugin(pluginName, &input)
+				mu.Lock()
+				if err != nil {
 					outputs[pluginName] = &ActionOutput{
-						Error: fmt.Errorf("execution cancelled").Error(),
+						Error: err.Error(),
 					}
-					mu.Unlock()
-					return
-				default:
-					input := ActionInput{
-						AssessmentId: a.cfg.AssessmentId,
-						SSPId:        a.cfg.SSPId,
-						ControlId:    a.cfg.ControlId,
-						ComponentId:  a.cfg.ComponentId,
-						Config:       pluginConfig.Configuration,
-						Parameters:   pluginConfig.Parameters,
-					}
-
-					output, err := a.executePlugin(pluginName, input)
-					mu.Lock()
-					if err != nil {
-						outputs[pluginName] = &ActionOutput{
-							Error: err.Error(),
-						}
-						log.WithField("plugin", pluginName).Error(err)
-					} else {
-						outputs[pluginName] = output
-					}
-					mu.Unlock()
+					log.WithField("plugin", pluginName).Error(err)
+				} else {
+					outputs[pluginName] = output
 				}
+				mu.Unlock()
 			}
-
-		}(plugin.Name)
+		}(pluginConfig)
 	}
 
 	wg.Wait()
 
-	return outputs, nil
+	return outputs
 }
 
 func (a *AssessmentRunner) Stop() {
+	log.Infof("stopping assessment %s", a.cfg.AssessmentId)
+
 	var wg sync.WaitGroup
 
 	for _, client := range a.clients {
@@ -99,6 +96,8 @@ func (a *AssessmentRunner) Stop() {
 	}
 
 	wg.Wait()
+
+	log.Infof("stopped assessment %s", a.cfg.AssessmentId)
 }
 
 func (a *AssessmentRunner) loadPlugins() error {
@@ -144,7 +143,7 @@ func (a *AssessmentRunner) loadPlugins() error {
 	return nil
 }
 
-func (a *AssessmentRunner) executePlugin(name string, input ActionInput) (*ActionOutput, error) {
+func (a *AssessmentRunner) executePlugin(name string, input *ActionInput) (*ActionOutput, error) {
 	client, ok := a.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
@@ -171,7 +170,7 @@ func (a *AssessmentRunner) executePlugin(name string, input ActionInput) (*Actio
 	}
 
 	plugin := raw.(Plugin)
-	output, err := plugin.Execute(&input)
+	output, err := plugin.Execute(input)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"plugin": name,
