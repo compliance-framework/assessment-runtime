@@ -54,14 +54,16 @@ build-plugin: ## Build sample plugin and copy to bin along with config and asses
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
 	mkdir -p bin/assessments
-
-	go build -o bin/plugins/busy/1.0.0/busy ./tests/plugins/busy.go
-	go build -o bin/plugins/hello/1.0.0/hello ./tests/plugins/hello.go
-	chmod +x bin/plugins/busy/1.0.0/busy
-	chmod +x bin/plugins/hello/1.0.0/hello
-	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	cp ./tests/runtime/config.yml ./bin/config.yml
 	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
+	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./tests/plugins/busy.go
+	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./tests/plugins/hello.go
+	chmod +x bin/plugins/busy/1.0.0/busy
+	chmod +x bin/plugins/hello/1.0.0/hello
+
+start: build-plugin
+	@$(GO) build -o ./bin/$(BINARY_NAME) ./
+	./bin/$(BINARY_NAME)
 
 protoc: ## Generate protobuf files
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
