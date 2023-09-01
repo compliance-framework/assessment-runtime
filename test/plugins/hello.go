@@ -26,7 +26,7 @@ func (p *Hello) Execute(_ *plugins.ActionInput) (*plugins.ActionOutput, error) {
 	}, nil
 }
 
-func (p *Hello) Shutdown(ctx context.Context) error {
+func (p *Hello) Shutdown(context.Context) error {
 	return nil
 }
 

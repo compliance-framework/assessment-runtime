@@ -31,7 +31,7 @@ func (p *BusyPlugin) Execute(_ *plugins.ActionInput) (*plugins.ActionOutput, err
 	}, nil
 }
 
-func (p *BusyPlugin) Shutdown(ctx context.Context) error {
+func (p *BusyPlugin) Shutdown(context.Context) error {
 	return nil
 }
 
