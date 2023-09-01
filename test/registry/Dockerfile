@@ -7,8 +7,8 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/busy ./tests/plugins/busy.go
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/hello ./tests/plugins/hello.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/busy ./test/plugins/busy.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/hello ./test/plugins/hello.go
 
 FROM nginx:latest
 

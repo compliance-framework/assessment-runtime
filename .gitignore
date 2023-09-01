@@ -27,4 +27,4 @@ bin/**
 node_modules/
 
 # Sample plugin
-tests/registry/sample
+test/registry/sample
