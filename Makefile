@@ -54,10 +54,10 @@ build-plugin: ## Build sample plugin and copy to bin along with config and asses
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
 	mkdir -p bin/assessments
-	cp ./tests/runtime/config.yml ./bin/config.yml
-	cp ./tests/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
-	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./tests/plugins/busy.go
-	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./tests/plugins/hello.go
+	cp ./test/runtime/config.yml ./bin/config.yml
+	cp ./test/runtime/assessments/assess-1234.yaml ./bin/assessments/assessment-1234.yaml
+	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./test/plugins/busy.go
+	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./test/plugins/hello.go
 	chmod +x bin/plugins/busy/1.0.0/busy
 	chmod +x bin/plugins/hello/1.0.0/hello
 

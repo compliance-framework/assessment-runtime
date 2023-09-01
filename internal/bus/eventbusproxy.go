@@ -2,7 +2,7 @@ package bus
 
 import (
 	"encoding/json"
-	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"sync"
