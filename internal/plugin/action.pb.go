@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.31.0
 // 	protoc        v4.23.4
-// source: plugins/action.proto
+// source: plugin/action.proto
 
-package plugins
+package plugin
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

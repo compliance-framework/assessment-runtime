@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	plugins2 "github.com/compliance-framework/assessment-runtime/internal/plugins"
+	. "github.com/compliance-framework/assessment-runtime/internal/plugin"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -13,7 +13,7 @@ func (p *Hello) Init() error {
 	return nil
 }
 
-func (p *Hello) Execute(_ *plugins2.ActionInput) (*plugins2.ActionOutput, error) {
+func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
 	data := map[string]interface{}{
 		"message": "Hello World",
 	}
@@ -21,7 +21,7 @@ func (p *Hello) Execute(_ *plugins2.ActionInput) (*plugins2.ActionOutput, error)
 	if err != nil {
 		return nil, err
 	}
-	return &plugins2.ActionOutput{
+	return &ActionOutput{
 		ResultData: s,
 	}, nil
 }
@@ -31,7 +31,7 @@ func (p *Hello) Shutdown(context.Context) error {
 }
 
 func main() {
-	plugins2.Register(map[string]plugins2.Plugin{
+	Register(map[string]Plugin{
 		"hello-plugin": &Hello{},
 	})
 }

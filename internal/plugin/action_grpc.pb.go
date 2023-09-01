@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: plugins/action.proto
+// source: plugin/action.proto
 
-package plugins
+package plugin
 
 import (
 	context "context"
@@ -105,5 +105,5 @@ var ActionService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "plugins/action.proto",
+	Metadata: "plugin/action.proto",
 }

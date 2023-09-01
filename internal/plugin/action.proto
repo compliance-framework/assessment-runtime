@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/struct.proto";
 
 package plugin;
-option go_package = "./plugins";
+option go_package = "./plugin";
 
 // ActionInput is a message type that represents the input for an action.
 message ActionInput {
