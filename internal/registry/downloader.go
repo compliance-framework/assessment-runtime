@@ -1,7 +1,8 @@
-package plugin
+package registry
 
 import (
 	"fmt"
+	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"io"
 	"net/http"
 	"os"
@@ -9,16 +10,14 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/compliance-framework/assessment-runtime/internal"
 )
 
-type PackageDownloader struct {
+type Downloader struct {
 	registryURL string
 	client      *http.Client
 }
 
-func NewPackageDownloader(registryURL string) *PackageDownloader {
+func NewPackageDownloader(registryURL string) *Downloader {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -33,19 +32,19 @@ func NewPackageDownloader(registryURL string) *PackageDownloader {
 		}
 	}
 
-	return &PackageDownloader{
+	return &Downloader{
 		registryURL: registryURL,
 		client:      &http.Client{},
 	}
 }
 
-func (m *PackageDownloader) DownloadPackages(packages []runtime.PackageInfo) error {
+func (m *Downloader) DownloadPackages(packages []config.PackageInfo) error {
 	var wg sync.WaitGroup
 	var errorCh = make(chan error)
 
 	for _, pkg := range packages {
 		wg.Add(1)
-		go func(p runtime.PackageInfo) {
+		go func(p config.PackageInfo) {
 			defer wg.Done()
 			log.WithFields(log.Fields{
 				"package": p.Name,
@@ -81,7 +80,7 @@ func (m *PackageDownloader) DownloadPackages(packages []runtime.PackageInfo) err
 	return nil
 }
 
-func (m *PackageDownloader) downloadPackage(p runtime.PackageInfo) error {
+func (m *Downloader) downloadPackage(p config.PackageInfo) error {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
