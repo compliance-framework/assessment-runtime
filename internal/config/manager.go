@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/compliance-framework/assessment-runtime/internal"
 	"gopkg.in/yaml.v3"
 )
 
@@ -96,14 +95,14 @@ func (cm *ConfigurationManager) Config() Config {
 	return cm.config
 }
 
-func (cm *ConfigurationManager) Packages() ([]runtime.PackageInfo, error) {
-	pluginInfoMap := make(map[string]runtime.PackageInfo)
+func (cm *ConfigurationManager) Packages() ([]PackageInfo, error) {
+	pluginInfoMap := make(map[string]PackageInfo)
 
 	for _, config := range cm.assessmentConfigs {
 		for _, plugin := range config.Plugins {
 			key := plugin.Package + plugin.Version
 			if _, exists := pluginInfoMap[key]; !exists {
-				info := runtime.PackageInfo{
+				info := PackageInfo{
 					Name:    plugin.Package,
 					Version: plugin.Version,
 				}
@@ -112,7 +111,7 @@ func (cm *ConfigurationManager) Packages() ([]runtime.PackageInfo, error) {
 		}
 	}
 
-	pluginInfos := make([]runtime.PackageInfo, 0, len(pluginInfoMap))
+	pluginInfos := make([]PackageInfo, 0, len(pluginInfoMap))
 	for _, info := range pluginInfoMap {
 		pluginInfos = append(pluginInfos, info)
 	}
