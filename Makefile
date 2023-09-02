@@ -67,3 +67,6 @@ start: build-plugin
 
 protoc: ## Generate protobuf files
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
+
+graph: ## Generate dependency graph, requires godepgraph and graphviz
+	godepgraph -p google.golang.org,github.com/sirupsen,github.com/hashicorp,github.com/robfig,gopkg.in -s ./internal | dot -Tpng -o godepgraph.png
