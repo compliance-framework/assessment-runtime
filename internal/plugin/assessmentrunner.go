@@ -1,9 +1,9 @@
-package plugins
+package plugin
 
 import (
 	"context"
 	"fmt"
-	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/internal/config"
 	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
 	"os"

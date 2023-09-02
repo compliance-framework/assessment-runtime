@@ -2,18 +2,18 @@ services:
   plugin-registry:
     build:
       context: ../
-      dockerfile: tests/registry/Dockerfile
+      dockerfile: /registry/Dockerfile
     ports:
       - "3000:3000"
   nats:
     image: nats:latest
     volumes:
-      - ${PWD}/tests/messaging/nats-server.conf:/nats-server.conf
+      - ${PWD}/test/messaging/nats-server.conf:/nats-server.conf
     ports:
       - "4222:4222"
   assessment-runtime:
     build:
       context: ../
-      dockerfile: tests/runtime/Dockerfile
+      dockerfile: /runtime/Dockerfile
     depends_on:
       - plugin-registry

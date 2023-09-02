@@ -1,7 +1,7 @@
 package bus
 
 import (
-	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

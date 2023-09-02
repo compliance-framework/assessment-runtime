@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/compliance-framework/assessment-runtime/plugins"
+	. "github.com/compliance-framework/assessment-runtime/internal/plugin"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 	"math/rand"
 	"time"
@@ -17,7 +17,7 @@ func (p *BusyPlugin) Init() error {
 	return nil
 }
 
-func (p *BusyPlugin) Execute(_ *plugins.ActionInput) (*plugins.ActionOutput, error) {
+func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
 	time.Sleep(p.duration)
 	data := map[string]interface{}{
 		"message": p.message,
@@ -26,21 +26,21 @@ func (p *BusyPlugin) Execute(_ *plugins.ActionInput) (*plugins.ActionOutput, err
 	if err != nil {
 		return nil, err
 	}
-	return &plugins.ActionOutput{
+	return &ActionOutput{
 		ResultData: s,
 	}, nil
 }
 
-func (p *BusyPlugin) Shutdown(ctx context.Context) error {
+func (p *BusyPlugin) Shutdown(context.Context) error {
 	return nil
 }
 
 func main() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	pluginsMap := make(map[string]plugins.Plugin)
+	pluginsMap := make(map[string]Plugin)
 	pluginsMap["busy-plugin"] = &BusyPlugin{
 		duration: time.Duration(r.Intn(10)) * time.Second,
 		message:  "Busy Plugin completed",
 	}
-	plugins.Register(pluginsMap)
+	Register(pluginsMap)
 }

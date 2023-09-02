@@ -1,8 +1,8 @@
-package plugins
+package plugin
 
 import (
 	"context"
-	"github.com/compliance-framework/assessment-runtime/config"
+	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"sync"
