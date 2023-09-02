@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
-	"github.com/compliance-framework/assessment-runtime/internal/plugin"
+	"github.com/compliance-framework/assessment-runtime/internal/registry"
+	"github.com/compliance-framework/assessment-runtime/internal/scheduling"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
@@ -33,14 +34,14 @@ func main() {
 		log.Fatalf("Failed to get packages: %s", err)
 	}
 
-	pluginDownloader := plugin.NewPackageDownloader(confManager.Config().PluginRegistryURL)
+	pluginDownloader := registry.NewPackageDownloader(confManager.Config().PluginRegistryURL)
 	err = pluginDownloader.DownloadPackages(packages)
 	if err != nil {
 		log.Errorf("Error downloading some of the plugins: %s", err)
 		// TODO: If the download error keeps occurring, we should report it back to the control plane.
 	}
 
-	scheduler := plugin.NewScheduler(confManager.Assessments())
+	scheduler := scheduling.NewScheduler(confManager.Assessments())
 
 	wg.Add(1)
 	go func() {

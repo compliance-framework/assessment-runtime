@@ -1,9 +1,10 @@
-package plugin
+package assessment
 
 import (
 	"context"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
+	"github.com/compliance-framework/assessment-runtime/internal/plugin"
 	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -12,13 +13,13 @@ import (
 	"sync"
 )
 
-type AssessmentRunner struct {
+type Runner struct {
 	cfg     config.AssessmentConfig
 	clients map[string]*goplugin.Client
 }
 
-func NewAssessmentRunner(cfg config.AssessmentConfig) (*AssessmentRunner, error) {
-	a := &AssessmentRunner{
+func NewRunner(cfg config.AssessmentConfig) (*Runner, error) {
+	a := &Runner{
 		cfg:     cfg,
 		clients: make(map[string]*goplugin.Client),
 	}
@@ -31,8 +32,8 @@ func NewAssessmentRunner(cfg config.AssessmentConfig) (*AssessmentRunner, error)
 	return a, nil
 }
 
-func (a *AssessmentRunner) Run(ctx context.Context) map[string]*ActionOutput {
-	outputs := make(map[string]*ActionOutput)
+func (a *Runner) Run(ctx context.Context) map[string]*plugin.ActionOutput {
+	outputs := make(map[string]*plugin.ActionOutput)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -47,13 +48,13 @@ func (a *AssessmentRunner) Run(ctx context.Context) map[string]*ActionOutput {
 			case <-ctx.Done():
 				log.WithField("plugin", pluginName).Info("execution cancelled")
 				mu.Lock()
-				outputs[pluginName] = &ActionOutput{
+				outputs[pluginName] = &plugin.ActionOutput{
 					Error: fmt.Errorf("execution cancelled").Error(),
 				}
 				mu.Unlock()
 				return
 			default:
-				input := ActionInput{
+				input := plugin.ActionInput{
 					AssessmentId: a.cfg.AssessmentId,
 					SSPId:        a.cfg.SSPId,
 					ControlId:    a.cfg.ControlId,
@@ -65,7 +66,7 @@ func (a *AssessmentRunner) Run(ctx context.Context) map[string]*ActionOutput {
 				output, err := a.executePlugin(pluginName, &input)
 				mu.Lock()
 				if err != nil {
-					outputs[pluginName] = &ActionOutput{
+					outputs[pluginName] = &plugin.ActionOutput{
 						Error: err.Error(),
 					}
 					log.WithField("plugin", pluginName).Error(err)
@@ -82,7 +83,7 @@ func (a *AssessmentRunner) Run(ctx context.Context) map[string]*ActionOutput {
 	return outputs
 }
 
-func (a *AssessmentRunner) Stop() {
+func (a *Runner) Stop() {
 	log.Infof("stopping assessment %s", a.cfg.AssessmentId)
 
 	var wg sync.WaitGroup
@@ -100,10 +101,10 @@ func (a *AssessmentRunner) Stop() {
 	log.Infof("stopped assessment %s", a.cfg.AssessmentId)
 }
 
-func (a *AssessmentRunner) loadPlugins() error {
+func (a *Runner) loadPlugins() error {
 	pluginMap := make(map[string][]config.PluginConfig)
-	for _, plugin := range a.cfg.Plugins {
-		pluginMap[plugin.Package] = append(pluginMap[plugin.Package], plugin)
+	for _, pluginConfig := range a.cfg.Plugins {
+		pluginMap[pluginConfig.Package] = append(pluginMap[pluginConfig.Package], pluginConfig)
 	}
 
 	ex, err := os.Executable()
@@ -115,9 +116,9 @@ func (a *AssessmentRunner) loadPlugins() error {
 		log.WithField("package", pkg).Info("Loading package")
 
 		pluginMap := make(map[string]goplugin.Plugin)
-		for _, plugin := range plugins {
-			log.WithField("plugin", plugin.Name).Info("Loading plugin")
-			pluginMap[plugin.Name] = &AssessmentActionGRPCPlugin{}
+		for _, pluginConfig := range plugins {
+			log.WithField("plugin", pluginConfig.Name).Info("Loading plugin")
+			pluginMap[pluginConfig.Name] = &plugin.AssessmentActionGRPCPlugin{}
 		}
 		pluginsPath := filepath.Join(filepath.Dir(ex), "./plugins")
 		packagePath := fmt.Sprintf("%s/%s/%s/%s", pluginsPath, pkg, plugins[0].Version, pkg)
@@ -129,21 +130,21 @@ func (a *AssessmentRunner) loadPlugins() error {
 		}).Info("Loading plugin package")
 
 		client := goplugin.NewClient(&goplugin.ClientConfig{
-			HandshakeConfig:  HandshakeConfig,
+			HandshakeConfig:  plugin.HandshakeConfig,
 			Plugins:          pluginMap,
 			Cmd:              exec.Command(packagePath),
 			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolGRPC},
 		})
 
-		for _, plugin := range plugins {
-			a.clients[plugin.Name] = client
+		for _, pluginConfig := range plugins {
+			a.clients[pluginConfig.Name] = client
 		}
 	}
 
 	return nil
 }
 
-func (a *AssessmentRunner) executePlugin(name string, input *ActionInput) (*ActionOutput, error) {
+func (a *Runner) executePlugin(name string, input *plugin.ActionInput) (*plugin.ActionOutput, error) {
 	client, ok := a.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
@@ -169,8 +170,8 @@ func (a *AssessmentRunner) executePlugin(name string, input *ActionInput) (*Acti
 		return nil, err
 	}
 
-	plugin := raw.(Plugin)
-	output, err := plugin.Execute(input)
+	plg := raw.(plugin.Plugin)
+	output, err := plg.Execute(input)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"plugin": name,
