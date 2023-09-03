@@ -2,23 +2,26 @@ package bus
 
 import (
 	"encoding/json"
-	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
+type chanHolder struct {
+	Ch interface{}
+}
+
 var (
-	conn           *nats.Conn
-	configChannels []chan<- config.Config
-	mu             sync.Mutex
+	conn  *nats.Conn
+	subCh []chanHolder
+	mu    sync.Mutex
 )
 
 func Connect(server string) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if conn != nil && configChannels != nil {
+	if conn != nil && len(subCh) > 0 {
 		return nil
 	}
 
@@ -27,37 +30,43 @@ func Connect(server string) error {
 	if err != nil {
 		return err
 	}
-	configChannels = make([]chan<- config.Config, 0)
+	subCh = make([]chanHolder, 0)
 	return nil
 }
 
-func SubToConfig(ch chan<- config.Config) error {
-	_, err := conn.Subscribe("configuration", func(m *nats.Msg) {
-		var cfg config.Config
-		err := json.Unmarshal(m.Data, &cfg)
+func Subscribe[T any](topic string) (chan T, error) {
+	ch := make(chan T)
+	_, err := conn.Subscribe(topic, func(m *nats.Msg) {
+		var msg T
+		err := json.Unmarshal(m.Data, &msg)
 		if err != nil {
 			log.Printf("Error unmarshalling data: %v", err)
 			return
 		}
-		ch <- cfg
+		ch <- msg
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	mu.Lock()
-	configChannels = append(configChannels, ch)
+	subCh = append(subCh, chanHolder{Ch: ch})
 	mu.Unlock()
-	return nil
+	return ch, nil
 }
 
-func PubConfig(cfg config.Config) error {
-	data, err := json.Marshal(cfg)
+func Publish[T any](msg T, topic string) error {
+	data, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	return conn.Publish("configuration", data)
+	return conn.Publish(topic, data)
 }
 
 func Close() {
 	conn.Close()
+	for _, holder := range subCh {
+		if ch, ok := holder.Ch.(chan any); ok {
+			close(ch)
+		}
+	}
 }

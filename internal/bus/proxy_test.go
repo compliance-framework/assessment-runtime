@@ -1,29 +1,35 @@
 package bus
 
 import (
-	"github.com/compliance-framework/assessment-runtime/internal/config"
+	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestSubToConfig(t *testing.T) {
-	err := Connect("localhost:4222")
-	if err != nil {
-		t.Errorf("Failed to connect: %v", err)
-	}
+type Message struct {
+	Text string `json:"text"`
+}
 
-	ch := make(chan config.Config, 1)
-	err = SubToConfig(ch)
-	if err != nil {
-		t.Errorf("Failed to subscribe to configuration: %v", err)
-	}
+func TestBus(t *testing.T) {
+	s := natsserver.RunServer(&natsserver.DefaultTestOptions)
+	defer s.Shutdown()
 
-	cfg := config.Config{} // Fill this with actual data
-	err = PubConfig(cfg)
-	if err != nil {
-		t.Errorf("Failed to publish configuration: %v", err)
-	}
+	err := Connect(nats.DefaultURL)
+	assert.NoError(t, err)
 
-	receivedCfg := <-ch
-	assert.Equal(t, cfg, receivedCfg, "Received configuration does not match published one")
+	topic := "test"
+	msg := Message{Text: "Hello, World!"}
+
+	ch, err := Subscribe[Message](topic)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	err = Publish(msg, topic)
+	assert.NoError(t, err)
+
+	received := <-ch
+	assert.Equal(t, msg.Text, received.Text)
+
+	Close()
 }
