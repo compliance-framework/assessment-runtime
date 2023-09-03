@@ -35,16 +35,10 @@ func main() {
 	}
 
 	// Download plugin packages
-	packages, err := confManager.Packages()
-	if err != nil {
-		log.Fatalf("Failed to get packages: %s", err)
-	}
-
 	pluginDownloader := registry.NewPackageDownloader(confManager.Config().PluginRegistryURL)
-	err = pluginDownloader.DownloadPackages(packages)
+	err = pluginDownloader.DownloadPackages(confManager.Packages())
 	if err != nil {
 		log.Errorf("Error downloading some of the plugins: %s", err)
-		// TODO: If the download error keeps occurring, we should report it back to the control plane.
 	}
 
 	scheduler := scheduling.NewScheduler(confManager.Assessments())
