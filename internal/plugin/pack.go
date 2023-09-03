@@ -74,7 +74,7 @@ func (p *Pack) LoadPlugins() error {
 }
 
 func (p *Pack) UnloadPlugins() {
-	log.Infof("stopping assessment %s", p.cfg.AssessmentId)
+	log.Info("unloading plugins")
 
 	var wg sync.WaitGroup
 
@@ -87,6 +87,4 @@ func (p *Pack) UnloadPlugins() {
 	}
 
 	wg.Wait()
-
-	log.Infof("stopped assessment %s", p.cfg.AssessmentId)
 }
