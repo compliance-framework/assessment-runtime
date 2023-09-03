@@ -95,7 +95,7 @@ func (cm *ConfigurationManager) Config() Config {
 	return cm.config
 }
 
-func (cm *ConfigurationManager) Packages() ([]PackageInfo, error) {
+func (cm *ConfigurationManager) Packages() []PackageInfo {
 	pluginInfoMap := make(map[string]PackageInfo)
 
 	for _, config := range cm.assessmentConfigs {
@@ -116,7 +116,7 @@ func (cm *ConfigurationManager) Packages() ([]PackageInfo, error) {
 		pluginInfos = append(pluginInfos, info)
 	}
 
-	return pluginInfos, nil
+	return pluginInfos
 }
 
 func (cm *ConfigurationManager) Assessments() []AssessmentConfig {
