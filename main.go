@@ -15,13 +15,13 @@ import (
 )
 
 func main() {
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.TraceLevel)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	var wg sync.WaitGroup
-
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.TraceLevel)
 
 	confManager, err := config.NewConfigurationManager()
 	if err != nil {
