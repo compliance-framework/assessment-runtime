@@ -8,7 +8,9 @@ type EventType int
 
 const (
 	ConfigurationUpdated EventType = iota
+	AssessmentStarted
 	AssessmentCompleted
+	AssessmentFailed
 )
 
 type Event struct {
@@ -36,7 +38,7 @@ func Subscribe(topic EventType) (<-chan Event, error) {
 	return ch, nil
 }
 
-func Publish(topic EventType, data string) {
+func Publish(event Event) {
 	mu.RLock()
 	defer mu.RUnlock()
 
@@ -44,12 +46,7 @@ func Publish(topic EventType, data string) {
 		return
 	}
 
-	event := Event{
-		Type: topic,
-		Data: data,
-	}
-
-	for _, ch := range subs[topic] {
+	for _, ch := range subs[event.Type] {
 		go func(ch chan Event) {
 			ch <- event
 		}(ch)
