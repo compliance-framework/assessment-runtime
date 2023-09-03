@@ -2,6 +2,7 @@ package scheduling
 
 import (
 	"context"
+	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
 	"sync"
 
 	"github.com/compliance-framework/assessment-runtime/internal/assessment"
@@ -18,12 +19,14 @@ type Scheduler struct {
 	c                  *cron.Cron
 	configs            []config.AssessmentConfig
 	runningAssessments sync.Map
+	collector          *assessment.Collector
 }
 
 func NewScheduler(assessmentConfigs []config.AssessmentConfig) *Scheduler {
 	s := &Scheduler{
-		c:       cron.New(cron.WithSeconds()),
-		configs: assessmentConfigs,
+		c:         cron.New(cron.WithSeconds()),
+		configs:   assessmentConfigs,
+		collector: assessment.NewCollector(),
 	}
 	return s
 }
@@ -79,19 +82,25 @@ func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.Assessme
 				"control-id":    assessmentConfig.ControlId,
 				"component-id":  assessmentConfig.ComponentId,
 			}).Errorf("Failed to create assessment: %s", err)
-			// TODO: We should report this back to the control plane.
+
+			pubsub.Publish(pubsub.Event{
+				Type: pubsub.AssessmentFailed,
+				Data: assessmentConfig.AssessmentId,
+			})
 			return
 		}
+
+		defer runner.Stop()
+
 		s.runningAssessments.Store(assessmentConfig.AssessmentId, runner)
-		runner.Run(ctx)
-		runner.Stop()
+		result := runner.Run(ctx)
+		s.collector.Process(assessment.Result{
+			AssessmentId: assessmentConfig.AssessmentId,
+			Outputs:      result,
+		})
 		s.runningAssessments.Delete(assessmentConfig.AssessmentId)
 	}
 
 	_, err := s.c.AddFunc(assessmentConfig.Schedule, job)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
