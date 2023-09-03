@@ -40,14 +40,14 @@ lint:  ## Lint the code
 	@golint ./...
 
 build-images:  ## Build Docker images
-	docker build -t plugin-registry ./tests/registry
-	docker build -t assessment-runtime -f tests/runtime/Dockerfile .
+	docker build -t plugin-registry ./test/registry
+	docker build -t assessment-runtime -f test/runtime/Dockerfile .
 
 up:  ## Run up test environment
-	docker compose -f ./tests/docker-compose.yml up --build
+	docker compose -f ./test/docker-compose.yml up --build
 
 down:  ## Bring down test environment
-	docker compose -f ./tests/docker-compose.yml down
+	docker compose -f ./test/docker-compose.yml down
 
 build-plugin: ## Build sample plugin and copy to bin along with config and assessment
 	rm -rf bin
