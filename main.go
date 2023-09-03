@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/compliance-framework/assessment-runtime/internal/bus"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/compliance-framework/assessment-runtime/internal/registry"
 	"github.com/compliance-framework/assessment-runtime/internal/scheduling"
@@ -26,6 +27,11 @@ func main() {
 	confManager, err := config.NewConfigurationManager()
 	if err != nil {
 		log.Fatalf("Failed to create configuration manager: %s", err)
+	}
+
+	err = bus.Connect(confManager.Config().EventBusURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to event bus: %s", err)
 	}
 
 	// Download plugin packages

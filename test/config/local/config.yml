@@ -1,0 +1,5 @@
+# Runtime would retrieve this id from the control plane.
+runtimeId: "123e4567-e89b-12d3-a456-426614174000"
+controlPlaneURL: "http://control-plane"
+pluginRegistryURL: "http://plugin-registry"
+eventBusURL: "nats://localhost:4222"
