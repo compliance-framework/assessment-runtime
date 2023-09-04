@@ -61,9 +61,9 @@ func (s *Scheduler) Stop() {
 	s.runningAssessments.Range(func(key, value interface{}) bool {
 		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			runner := value.(*assessment.Runner)
 			runner.Stop()
-			wg.Done()
 		}()
 		return true
 	})
