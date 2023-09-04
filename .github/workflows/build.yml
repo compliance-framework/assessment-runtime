@@ -1,0 +1,8 @@
+name: test-build
+run-name: ${{ github.actor }} test job $env:GITHUB_JOB
+on: [push]
+jobs:
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - run: make build
