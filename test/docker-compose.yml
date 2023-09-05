@@ -2,7 +2,7 @@ services:
   plugin-registry:
     build:
       context: ../
-      dockerfile: /registry/Dockerfile
+      dockerfile: test/registry/Dockerfile
     ports:
       - "3000:3000"
   nats:
@@ -14,6 +14,6 @@ services:
   assessment-runtime:
     build:
       context: ../
-      dockerfile: /runtime/Dockerfile
+      dockerfile: test/runtime/Dockerfile
     depends_on:
       - plugin-registry
