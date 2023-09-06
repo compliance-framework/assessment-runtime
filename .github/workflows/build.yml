@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build the docker-compose stack
-        run: docker-compose up -d
+        run: cd test && docker-compose -f docker-compose.yml up -d
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
