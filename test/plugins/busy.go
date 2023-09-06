@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	. "github.com/compliance-framework/assessment-runtime/internal/plugin"
-	structpb "google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"math/rand"
 	"time"
 )
