@@ -1,6 +1,6 @@
 name: test-build
 on: [push]
 jobs:
-  build:
+  build-apps:
     uses:
       compliance-framework/workflows/.github/workflows/build_images.yml@main
