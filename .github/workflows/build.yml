@@ -1,14 +1,6 @@
 name: test-build
-run-name: ${{ github.actor }} test job
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run the Docker Compose
-        working-directory: ./test
-        run: docker-compose -f docker-compose.yml up -d
-
-      - name: Check running containers
-        run: docker ps -a
+    uses:
+      compliance-framework/workflows/build_images.yml@main
