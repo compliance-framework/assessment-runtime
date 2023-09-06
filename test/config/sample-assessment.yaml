@@ -1,34 +1,40 @@
 # Unique identifier for the assessment
-assessment-id: "sample-assessment"
+uuid: "64d4b984-14c5-4135-88d0-f3ef0b7b82ac"
 
-# System Security Plan ID
-ssp-id: "ssp-5678"
+# Identifier of the System Security Plan (SSP)
+ssp-id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bdad"
 
-# Control ID
-control-id: "ctrl-9101"
+# Identifier of the assessment
+assessment-id: "c758890a-e6e8-4e7f-88fd-9a2e5ea26d86"
 
-# Component ID
-component-id: "comp-1121"
+# Identifier of the task
+task-id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bd22"
 
-# Schedule for the assessment to run in cron format
-schedule: "*/10 * * * * *"
+# Identifier of the activity
+activity-id: "555f56e0-8ae9-45d0-9fdd-3db4e8a5bdad"
 
-# List of plugins and their configurations
+# Identifier of the subject
+subject-id: "6b94eae0-8ae9-45d0-9fdd-3db4e8a5bdad"
+
+# Identifier of the control
+control-id: "6b9f56e0-8ae9-45d0-9fdd-3d5328a5bdad"
+
+# Schedule for the assessment in ISO 8601 duration format
+schedule: "*/10 * * * * *" # daily starting from 2022-01-01
+
+# List of plugins used for the assessment
 plugins:
   # Plugin details
   - name: "busy-plugin"
     package: "busy"
     version: "1.0.0"
 
-    # The configuration should be passed to the assessment,
-    # given that each plugin could be used in different assessments
-    # with varying configurations.
+    # Configuration for the plugin
     configuration:
-      config1: "value1"
-
-    # Parameters to be passed to the assessment, same as the configuration`
-    parameters:
-      param1: "value1"
+      - # Name of the configuration parameter
+        name: "compliance-level"
+        # Value of the configuration parameter
+        value: "high"
 
   - name: "hello-plugin"
     package: "hello"
@@ -38,8 +44,5 @@ plugins:
     # given that each plugin could be used in different assessments
     # with varying configurations.
     configuration:
-      config1: "value1"
-
-    # Parameters to be passed to the assessment, same as the configuration`
-    parameters:
-      param1: "value1"
+      - name: "compliance-level"
+        value: "low"
