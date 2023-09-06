@@ -42,9 +42,9 @@ build-images:  ## Build Docker images
 
 run-docker:  ## Run the test environment using Docker Compose
 	@echo "Running Docker Compose..."
-	docker-compose -f ./test/docker-compose.yml up --build
+	docker-compose -p argus -f ./test/docker-compose.yml up --build -d
 
-run-local: build-plugin  ## Build and run the application locally
+build-plugin:  ## Build plugins and copy the configuration
 	@echo "Preparing local environment..."
 	rm -rf bin
 	mkdir -p bin/plugins/busy/1.0.0
@@ -57,6 +57,8 @@ run-local: build-plugin  ## Build and run the application locally
 	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./test/plugins/hello.go
 	chmod +x bin/plugins/busy/1.0.0/busy
 	chmod +x bin/plugins/hello/1.0.0/hello
+
+run-local: build-plugin  ## Build and run the application locally
 	@echo "Building and running $(BINARY_NAME) locally..."
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	./bin/$(BINARY_NAME)
