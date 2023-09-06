@@ -3,4 +3,4 @@ on: [push]
 jobs:
   build:
     uses:
-      compliance-framework/workflows/build_images.yml@main
+      compliance-framework/workflows/.github/workflows/build_images.yml@main
