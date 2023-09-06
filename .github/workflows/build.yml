@@ -1,8 +1,15 @@
 name: test-build
-run-name: ${{ github.actor }} test job $env:GITHUB_JOB
+run-name: ${{ github.actor }} test job
 on: [push]
 jobs:
-  check-bats-version:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: make build
+      - name: Build the docker-compose stack
+        run: docker-compose up -d
+      - name: Sleep
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '60s'
+      - name: Check running containers
+        run: docker ps -a
