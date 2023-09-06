@@ -1,52 +1,126 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/compliance-framework/assessment-runtime/internal/bus"
+	"github.com/go-resty/resty/v2"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
-type ConfigurationError string
-
 type ConfigurationManager struct {
-	config            Config
-	assessmentConfigs []AssessmentConfig
+	config     Config
+	jobConfigs []JobConfig
+	client     *resty.Client
+}
+
+func getExecutableDir() (string, error) {
+	execPath, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("failed to get executable path: %w", err)
+	}
+	return filepath.Dir(execPath), nil
 }
 
 func NewConfigurationManager() (*ConfigurationManager, error) {
-	execPath, err := os.Executable()
+	execDir, err := getExecutableDir()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get executable path: %w", err)
+		return nil, err
 	}
-	execDir := filepath.Dir(execPath)
 
 	configPath := filepath.Join(execDir, "config.yml")
 	assessmentPath := filepath.Join(execDir, "assessments")
 
-	cm := &ConfigurationManager{}
-
-	if err := cm.loadConfig(configPath); err != nil {
-		return nil, err
+	cm := &ConfigurationManager{
+		client: resty.New().SetRetryCount(3).SetRetryWaitTime(5 * time.Second).SetRetryMaxWaitTime(20 * time.Second),
 	}
 
-	if err := cm.loadAssessmentConfigs(assessmentPath); err != nil {
-		return nil, err
+	err = cm.loadConfig(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
+	jobs, err := cm.getJobConfigs()
+	if err != nil {
+		log.Warn("failed to get job configurations from control plane. loading jobs from disk")
+		err = cm.loadJobConfigs(assessmentPath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		cm.jobConfigs = jobs
+
+		err = cm.writeJobConfigs(jobs)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return cm, nil
 }
 
-func (cm *ConfigurationManager) loadConfig(path string) error {
-	file, err := os.Open(path)
+func (cm *ConfigurationManager) Listen() {
+	// Subscribe to job configuration updates
+	ch, err := bus.Subscribe[JobConfig]("runtime.jobs")
 	if err != nil {
-		return fmt.Errorf("failed to open config file: %w", err)
+		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
-	defer file.Close()
 
-	data, err := io.ReadAll(file)
+	go func() {
+		for {
+			select {
+			case jobConfig := <-ch:
+				log.Infof("received job configuration update for assessment %s", jobConfig.AssessmentId)
+				cm.jobConfigs = append(cm.jobConfigs, jobConfig)
+			}
+		}
+	}()
+}
+
+func (cm *ConfigurationManager) getJobConfigs() ([]JobConfig, error) {
+	resp, err := cm.client.R().Get(cm.config.ControlPlaneURL + "/runtime/jobs")
+	if err != nil {
+		return nil, err
+	}
+
+	var jobs []JobConfig
+	err = json.Unmarshal(resp.Body(), &jobs)
+	if err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
+
+func (cm *ConfigurationManager) writeJobConfigs(jobConfigs []JobConfig) error {
+	execDir, err := getExecutableDir()
+	if err != nil {
+		return err
+	}
+
+	configPath := filepath.Join(execDir, "assessments")
+
+	for _, jobConfig := range jobConfigs {
+		data, err := yaml.Marshal(jobConfig)
+		if err != nil {
+			return fmt.Errorf("failed to marshal yaml data: %w", err)
+		}
+
+		err = os.WriteFile(filepath.Join(configPath, jobConfig.AssessmentId+".yaml"), data, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write file: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (cm *ConfigurationManager) loadConfig(path string) error {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -56,15 +130,10 @@ func (cm *ConfigurationManager) loadConfig(path string) error {
 		return fmt.Errorf("failed to unmarshal yaml data: %w", err)
 	}
 
-	err = cm.validate()
-	if err != nil {
-		return fmt.Errorf("config validation failed: %w", err)
-	}
-
 	return nil
 }
 
-func (cm *ConfigurationManager) loadAssessmentConfigs(path string) error {
+func (cm *ConfigurationManager) loadJobConfigs(path string) error {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to read directory: %w", err)
@@ -78,13 +147,13 @@ func (cm *ConfigurationManager) loadAssessmentConfigs(path string) error {
 				return fmt.Errorf("failed to read file: %w", err)
 			}
 
-			var config AssessmentConfig
+			var config JobConfig
 			err = yaml.Unmarshal(data, &config)
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal yaml data: %w", err)
 			}
 
-			cm.assessmentConfigs = append(cm.assessmentConfigs, config)
+			cm.jobConfigs = append(cm.jobConfigs, config)
 		}
 	}
 
@@ -95,14 +164,14 @@ func (cm *ConfigurationManager) Config() Config {
 	return cm.config
 }
 
-func (cm *ConfigurationManager) Packages() []PackageInfo {
-	pluginInfoMap := make(map[string]PackageInfo)
+func (cm *ConfigurationManager) Packages() []Package {
+	pluginInfoMap := make(map[string]Package)
 
-	for _, config := range cm.assessmentConfigs {
+	for _, config := range cm.jobConfigs {
 		for _, plugin := range config.Plugins {
 			key := plugin.Package + plugin.Version
 			if _, exists := pluginInfoMap[key]; !exists {
-				info := PackageInfo{
+				info := Package{
 					Name:    plugin.Package,
 					Version: plugin.Version,
 				}
@@ -111,7 +180,7 @@ func (cm *ConfigurationManager) Packages() []PackageInfo {
 		}
 	}
 
-	pluginInfos := make([]PackageInfo, 0, len(pluginInfoMap))
+	pluginInfos := make([]Package, 0, len(pluginInfoMap))
 	for _, info := range pluginInfoMap {
 		pluginInfos = append(pluginInfos, info)
 	}
@@ -119,30 +188,6 @@ func (cm *ConfigurationManager) Packages() []PackageInfo {
 	return pluginInfos
 }
 
-func (cm *ConfigurationManager) Assessments() []AssessmentConfig {
-	return cm.assessmentConfigs
-}
-
-func (cm *ConfigurationManager) validate() error {
-	if cm.config.RuntimeId == "" {
-		return ConfigurationError("runtimeId is empty")
-	}
-
-	if cm.config.ControlPlaneURL == "" {
-		return ConfigurationError("controlPlaneAPI is empty")
-	}
-
-	if cm.config.PluginRegistryURL == "" {
-		return ConfigurationError("pluginRegistryURL is empty")
-	}
-
-	if cm.config.EventBusURL == "" {
-		return ConfigurationError("eventBusURL is empty")
-	}
-
-	return nil
-}
-
-func (e ConfigurationError) Error() string {
-	return string(e)
+func (cm *ConfigurationManager) JobConfigs() []JobConfig {
+	return cm.jobConfigs
 }

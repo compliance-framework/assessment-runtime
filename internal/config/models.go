@@ -8,19 +8,34 @@ type Config struct {
 	EventBusURL       string `yaml:"eventBusURL" json:"eventBusURL"`
 }
 
-type AssessmentConfig struct {
-	AssessmentId string         `yaml:"assessment-id" json:"assessmentId"`
-	SSPId        string         `yaml:"ssp-id" json:"sspId"`
-	ControlId    string         `yaml:"control-id" json:"controlId"`
-	ComponentId  string         `yaml:"component-id" json:"componentId"`
-	Schedule     string         `yaml:"schedule" json:"schedule"`
-	Plugins      []PluginConfig `yaml:"plugins" json:"plugins"`
+type Pair struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type JobConfig struct {
+	Uuid         string         `json:"uuid" query:"uuid"`
+	RuntimeUuid  string         `json:"runtime-id"`
+	SspId        string         `json:"ssp-id,omitempty"`
+	AssessmentId string         `json:"assessment-id"`
+	TaskId       string         `json:"task-id"`
+	ActivityId   string         `json:"activity-id,omitempty"`
+	SubjectId    string         `json:"subject-id,omitempty"`
+	ControlId    string         `json:"control-id,omitempty"`
+	Schedule     string         `json:"schedule"`
+	Plugins      []PluginConfig `json:"plugins,omitempty"`
+	Parameters   []Pair         `json:"parameters,omitempty"`
 }
 
 type PluginConfig struct {
-	Name          string            `yaml:"name" json:"name"`
-	Package       string            `yaml:"package" json:"package"`
-	Version       string            `yaml:"version" json:"version"`
-	Configuration map[string]string `yaml:"configuration" json:"configuration"`
-	Parameters    map[string]string `yaml:"parameters" json:"parameters"`
+	Uuid          string `yaml:"uuid"`
+	Name          string `yaml:"name" json:"name"`
+	Package       string `yaml:"package" json:"package"`
+	Version       string `yaml:"version" json:"version"`
+	Configuration []Pair `yaml:"configuration" json:"configuration,omitempty"`
+}
+
+type Package struct {
+	Name    string `yaml:"name" json:"name"`
+	Version string `yaml:"version" json:"version"`
 }

@@ -12,11 +12,11 @@ import (
 )
 
 type Pack struct {
-	cfg     config.AssessmentConfig
+	cfg     config.JobConfig
 	Clients map[string]*goplugin.Client
 }
 
-func NewPluginPack(cfg config.AssessmentConfig) (*Pack, error) {
+func NewPluginPack(cfg config.JobConfig) (*Pack, error) {
 	p := &Pack{
 		cfg:     cfg,
 		Clients: make(map[string]*goplugin.Client),

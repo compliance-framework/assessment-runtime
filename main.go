@@ -34,6 +34,8 @@ func main() {
 		log.Fatalf("Failed to connect to event bus: %s", err)
 	}
 
+	confManager.Listen()
+
 	// Download plugin packages
 	pluginDownloader := registry.NewPackageDownloader(confManager.Config().PluginRegistryURL)
 	err = pluginDownloader.DownloadPackages(confManager.Packages())
@@ -41,7 +43,7 @@ func main() {
 		log.Errorf("Error downloading some of the plugins: %s", err)
 	}
 
-	scheduler := scheduling.NewScheduler(confManager.Assessments())
+	scheduler := scheduling.NewScheduler(confManager.JobConfigs())
 
 	wg.Add(1)
 	go func() {

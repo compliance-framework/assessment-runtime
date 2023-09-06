@@ -17,12 +17,12 @@ type JobFunc func()
 // Scheduler represents a scheduler service.
 type Scheduler struct {
 	c                  *cron.Cron
-	configs            []config.AssessmentConfig
+	configs            []config.JobConfig
 	runningAssessments sync.Map
 	collector          *assessment.Collector
 }
 
-func NewScheduler(assessmentConfigs []config.AssessmentConfig) *Scheduler {
+func NewScheduler(assessmentConfigs []config.JobConfig) *Scheduler {
 	s := &Scheduler{
 		c:         cron.New(cron.WithSeconds()),
 		configs:   assessmentConfigs,
@@ -38,9 +38,9 @@ func (s *Scheduler) Start(ctx context.Context) {
 		if err != nil {
 			log.WithFields(log.Fields{
 				"assessment-id": assessmentConfig.AssessmentId,
-				"ssp-id":        assessmentConfig.SSPId,
+				"ssp-id":        assessmentConfig.SspId,
 				"control-id":    assessmentConfig.ControlId,
-				"component-id":  assessmentConfig.ComponentId,
+				"component-id":  assessmentConfig.ControlId,
 			}).Errorf("Failed to add assessment job: %s", err)
 			// TODO: We should report this back to the control plane.
 			continue
@@ -72,15 +72,15 @@ func (s *Scheduler) Stop() {
 }
 
 // addJob adds an assessment job to the scheduler.
-func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.AssessmentConfig) error {
+func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfig) error {
 	job := func() {
 		runner, err := assessment.NewRunner(assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"assessment-id": assessmentConfig.AssessmentId,
-				"ssp-id":        assessmentConfig.SSPId,
+				"ssp-id":        assessmentConfig.SspId,
 				"control-id":    assessmentConfig.ControlId,
-				"component-id":  assessmentConfig.ComponentId,
+				"component-id":  assessmentConfig.ControlId,
 			}).Errorf("Failed to create assessment: %s", err)
 
 			pubsub.Publish(pubsub.Event{

@@ -10,12 +10,12 @@ import (
 )
 
 type Runner struct {
-	cfg      config.AssessmentConfig
+	cfg      config.JobConfig
 	pack     *plugin.Pack
 	executor *plugin.Executor
 }
 
-func NewRunner(cfg config.AssessmentConfig) (*Runner, error) {
+func NewRunner(cfg config.JobConfig) (*Runner, error) {
 	a := &Runner{
 		cfg: cfg,
 	}
@@ -54,11 +54,9 @@ func (r *Runner) Run(ctx context.Context) map[string]*plugin.ActionOutput {
 			default:
 				input := plugin.ActionInput{
 					AssessmentId: r.cfg.AssessmentId,
-					SSPId:        r.cfg.SSPId,
+					SSPId:        r.cfg.SspId,
 					ControlId:    r.cfg.ControlId,
-					ComponentId:  r.cfg.ComponentId,
-					Config:       pluginConfig.Configuration,
-					Parameters:   pluginConfig.Parameters,
+					ComponentId:  r.cfg.ControlId,
 				}
 
 				output, err := r.executor.ExecutePlugin(pluginName, &input)
