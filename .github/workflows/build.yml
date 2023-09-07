@@ -4,3 +4,9 @@ jobs:
   build-apps:
     uses:
       compliance-framework/workflows/.github/workflows/build.yml@main
+  print_data:
+    runs-on: ubuntu-latest
+    needs: build-apps
+    timeout-minutes: 1
+    steps:
+      - run: echo ${{ needs.build-apps.outputs.docker_ps }}
