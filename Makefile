@@ -51,7 +51,7 @@ build-plugin:  ## Build plugins and copy the configuration
 	mkdir -p bin/plugins/hello/1.0.0
 	mkdir -p bin/assessments
 	cp ./test/config/local/config.yml ./bin/config.yml
-	cp ./test/config/sample-assessment.yaml ./bin/assessments/
+	cp ./test/config/64d4b984-14c5-4135-88d0-f3ef0b7b82ac.yaml ./bin/assessments/
 	@echo "Building plugins..."
 	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./test/plugins/busy.go
 	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./test/plugins/hello.go
