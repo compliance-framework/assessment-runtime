@@ -47,7 +47,7 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 
 	jobs, err := cm.getJobConfigs()
 	if err != nil {
-		log.Warn("failed to get job configurations from control plane. loading jobs from disk")
+		log.Warn("failed to get job configurations from control plane. loading jobs from local config")
 		err = cm.loadJobConfigs(assessmentPath)
 		if err != nil {
 			return nil, err
@@ -60,22 +60,41 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 			return nil, err
 		}
 	}
+
+	cm.Listen()
+
 	return cm, nil
 }
 
 func (cm *ConfigurationManager) Listen() {
+	topic := "runtime.configuration" //fmt.Sprintf(, cm.config.RuntimeId)
+
 	// Subscribe to job configuration updates
-	ch, err := bus.Subscribe[JobConfig]("runtime.jobs")
+	ch, err := bus.Subscribe[[]EventConfigChanged](topic)
 	if err != nil {
 		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
 
+	// Listen for job configuration updates
+	// CM only manages config files, it doesn't work on running jobs
 	go func() {
 		for {
 			select {
-			case jobConfig := <-ch:
-				log.Infof("received job configuration update for assessment %s", jobConfig.AssessmentId)
-				cm.jobConfigs = append(cm.jobConfigs, jobConfig)
+			case changes := <-ch:
+				for _, event := range changes {
+					log.Infof("received job configuration event: %s", event.Type)
+					if event.Type == "created" || event.Type == "updated" {
+						err := cm.writeJobConfig(event.Data)
+						if err != nil {
+							log.Errorf("failed to write job config: %s for job: %s", err, event.Data.Uuid)
+						}
+					} else if event.Type == "delete" {
+						err := os.Remove(filepath.Join("assessments", event.Data.Uuid+".yaml"))
+						if err != nil {
+							log.Errorf("failed to delete job config: %s for job: %s", err, event.Data.Uuid)
+						}
+					}
+				}
 			}
 		}
 	}()
@@ -96,7 +115,7 @@ func (cm *ConfigurationManager) getJobConfigs() ([]JobConfig, error) {
 	return jobs, nil
 }
 
-func (cm *ConfigurationManager) writeJobConfigs(jobConfigs []JobConfig) error {
+func (cm *ConfigurationManager) writeJobConfig(jobConfig JobConfig) error {
 	execDir, err := getExecutableDir()
 	if err != nil {
 		return err
@@ -104,18 +123,26 @@ func (cm *ConfigurationManager) writeJobConfigs(jobConfigs []JobConfig) error {
 
 	configPath := filepath.Join(execDir, "assessments")
 
-	for _, jobConfig := range jobConfigs {
-		data, err := yaml.Marshal(jobConfig)
-		if err != nil {
-			return fmt.Errorf("failed to marshal yaml data: %w", err)
-		}
-
-		err = os.WriteFile(filepath.Join(configPath, jobConfig.AssessmentId+".yaml"), data, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to write file: %w", err)
-		}
+	data, err := yaml.Marshal(jobConfig)
+	if err != nil {
+		return fmt.Errorf("failed to marshal yaml data: %w", err)
 	}
 
+	err = os.WriteFile(filepath.Join(configPath, jobConfig.Uuid+".yaml"), data, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
+}
+
+func (cm *ConfigurationManager) writeJobConfigs(jobConfigs []JobConfig) error {
+	for _, jobConfig := range jobConfigs {
+		err := cm.writeJobConfig(jobConfig)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
