@@ -10,3 +10,6 @@ jobs:
     timeout-minutes: 1
     steps:
       - run: echo ${{ needs.build-apps.outputs.docker_ps }}
+      - name: List Directories
+        run:
+          ls -la
