@@ -11,5 +11,4 @@ jobs:
     steps:
       - run: echo ${{ needs.build-apps.outputs.docker_ps }}
       - name: List Directories
-        run:
-          ls -la
+        run: ls -la
