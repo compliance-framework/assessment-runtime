@@ -73,7 +73,7 @@ func (s *Scheduler) Stop() {
 
 // addJob adds an assessment job to the scheduler.
 func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfig) error {
-	job := func() {
+	jobFn := func() {
 		runner, err := job.NewRunner(assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -101,6 +101,6 @@ func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfi
 		s.runningAssessments.Delete(assessmentConfig.AssessmentId)
 	}
 
-	_, err := s.c.AddFunc(assessmentConfig.Schedule, job)
+	_, err := s.c.AddFunc(assessmentConfig.Schedule, jobFn)
 	return err
 }
