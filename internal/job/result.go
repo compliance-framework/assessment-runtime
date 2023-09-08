@@ -1,4 +1,4 @@
-package assessment
+package job
 
 import "github.com/compliance-framework/assessment-runtime/internal/plugin"
 

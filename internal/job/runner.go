@@ -1,4 +1,4 @@
-package assessment
+package job
 
 import (
 	"context"

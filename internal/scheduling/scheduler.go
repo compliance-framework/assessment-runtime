@@ -2,10 +2,10 @@ package scheduling
 
 import (
 	"context"
+	"github.com/compliance-framework/assessment-runtime/internal/job"
 	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
 	"sync"
 
-	"github.com/compliance-framework/assessment-runtime/internal/assessment"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
@@ -19,14 +19,14 @@ type Scheduler struct {
 	c                  *cron.Cron
 	configs            []config.JobConfig
 	runningAssessments sync.Map
-	collector          *assessment.Collector
+	collector          *job.Collector
 }
 
 func NewScheduler(assessmentConfigs []config.JobConfig) *Scheduler {
 	s := &Scheduler{
 		c:         cron.New(cron.WithSeconds()),
 		configs:   assessmentConfigs,
-		collector: assessment.NewCollector(),
+		collector: job.NewCollector(),
 	}
 	return s
 }
@@ -62,7 +62,7 @@ func (s *Scheduler) Stop() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			runner := value.(*assessment.Runner)
+			runner := value.(*job.Runner)
 			runner.Stop()
 		}()
 		return true
@@ -74,7 +74,7 @@ func (s *Scheduler) Stop() {
 // addJob adds an assessment job to the scheduler.
 func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfig) error {
 	job := func() {
-		runner, err := assessment.NewRunner(assessmentConfig)
+		runner, err := job.NewRunner(assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"assessment-id": assessmentConfig.AssessmentId,
@@ -94,7 +94,7 @@ func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfi
 
 		s.runningAssessments.Store(assessmentConfig.AssessmentId, runner)
 		result := runner.Run(ctx)
-		s.collector.Process(assessment.Result{
+		s.collector.Process(job.Result{
 			AssessmentId: assessmentConfig.AssessmentId,
 			Outputs:      result,
 		})
