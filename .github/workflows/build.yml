@@ -4,8 +4,10 @@ on:
   - workflow_dispatch
 jobs:
   build-apps:
-    uses:
-      compliance-framework/workflows/.github/workflows/build.yml@main
+    name: Reusable-Workflow
+    uses: compliance-framework/workflows/.github/workflows/build.yml@main
+    secrets:
+      GH_DEPL_KEY_CONF_SVC: ${{ secrets.GH_DEPL_KEY_CONF_SVC }}
   print_data:
     runs-on: ubuntu-latest
     needs: build-apps
