@@ -1,7 +1,7 @@
 package job
 
 import (
-	"github.com/compliance-framework/assessment-runtime/internal/bus"
+	"github.com/compliance-framework/assessment-runtime/internal/events"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func (c *Collector) Process(result Result) {
 	}).Infof("Processing result")
 
 	// For now, we just publish the event to the event bus without any processing
-	err := bus.Publish[Result](result, `job.result`)
+	err := events.Publish[Result](result, `job.result`)
 	if err != nil {
 		return
 	}

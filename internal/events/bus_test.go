@@ -1,4 +1,4 @@
-package bus
+package events
 
 import (
 	natsserver "github.com/nats-io/nats-server/v2/test"

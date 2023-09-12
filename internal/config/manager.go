@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/compliance-framework/assessment-runtime/internal/bus"
 	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -70,7 +69,7 @@ func (cm *ConfigurationManager) Listen() {
 	topic := "runtime.configuration" //fmt.Sprintf(, cm.config.RuntimeId)
 
 	// Subscribe to job configuration updates
-	ch, err := bus.Subscribe[[]EventConfigChanged](topic)
+	ch, err := events.Subscribe[[]EventConfigChanged](topic)
 	if err != nil {
 		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
