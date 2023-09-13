@@ -65,7 +65,7 @@ run-local: build-plugin  ## Build and run the application locally
 
 protoc:  ## Generate protobuf files
 	@echo "Generating protobuf files..."
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative plugins/action.proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=require_unimplemented_servers=false:. --go-grpc_opt=paths=source_relative internal/provider/action.proto
 
 graph:  ## Generate dependency graph
 	@echo "Generating dependency graph..."

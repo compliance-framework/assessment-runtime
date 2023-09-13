@@ -3,6 +3,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/compliance-framework/assessment-runtime/internal/event"
+	"github.com/compliance-framework/assessment-runtime/internal/model"
 	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -12,10 +14,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config represents the entire configuration loaded from the Yaml file.
+type Config struct {
+	RuntimeId         string `yaml:"runtimeId" json:"runtimeId"`
+	ControlPlaneURL   string `yaml:"controlPlaneURL" json:"controlPlaneURL"`
+	PluginRegistryURL string `yaml:"pluginRegistryURL" json:"pluginRegistryURL"`
+	EventBusURL       string `yaml:"eventBusURL" json:"eventBusURL"`
+}
+
 type ConfigurationManager struct {
-	config     Config
-	jobConfigs []JobConfig
-	client     *resty.Client
+	config       Config
+	jobTemplates []model.JobTemplate
+	client       *resty.Client
 }
 
 func getExecutableDir() (string, error) {
@@ -44,17 +54,17 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	jobs, err := cm.getJobConfigs()
+	jobs, err := cm.getJobTemplates()
 	if err != nil {
 		log.Warn("failed to get job configurations from control plane. loading jobs from local config")
-		err = cm.loadJobConfigs(assessmentPath)
+		err = cm.loadJobTemplates(assessmentPath)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cm.jobConfigs = jobs
+		cm.jobTemplates = jobs
 
-		err = cm.writeJobConfigs(jobs)
+		err = cm.writeJobTemplates(jobs)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +79,7 @@ func (cm *ConfigurationManager) Listen() {
 	topic := "runtime.configuration" //fmt.Sprintf(, cm.config.RuntimeId)
 
 	// Subscribe to job configuration updates
-	ch, err := events.Subscribe[[]EventConfigChanged](topic)
+	ch, err := event.Subscribe[[]model.ConfigChanged](topic)
 	if err != nil {
 		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
@@ -80,17 +90,17 @@ func (cm *ConfigurationManager) Listen() {
 		for {
 			select {
 			case changes := <-ch:
-				for _, event := range changes {
-					log.Infof("received job configuration event: %s", event.Type)
-					if event.Type == "created" || event.Type == "updated" {
-						err := cm.writeJobConfig(event.Data)
+				for _, change := range changes {
+					log.Infof("received job configuration change: %s", change.Type)
+					if change.Type == "created" || change.Type == "updated" {
+						err := cm.writeJobTemplate(change.Data)
 						if err != nil {
-							log.Errorf("failed to write job config: %s for job: %s", err, event.Data.Uuid)
+							log.Errorf("failed to write job config: %s for job: %s", err, change.Data.Uuid)
 						}
-					} else if event.Type == "delete" {
-						err := os.Remove(filepath.Join("assessments", event.Data.Uuid+".yaml"))
+					} else if change.Type == "delete" {
+						err := os.Remove(filepath.Join("assessments", change.Data.Uuid+".yaml"))
 						if err != nil {
-							log.Errorf("failed to delete job config: %s for job: %s", err, event.Data.Uuid)
+							log.Errorf("failed to delete job config: %s for job: %s", err, change.Data.Uuid)
 						}
 					}
 				}
@@ -99,13 +109,13 @@ func (cm *ConfigurationManager) Listen() {
 	}()
 }
 
-func (cm *ConfigurationManager) getJobConfigs() ([]JobConfig, error) {
+func (cm *ConfigurationManager) getJobTemplates() ([]model.JobTemplate, error) {
 	resp, err := cm.client.R().Get(cm.config.ControlPlaneURL + "/runtime/jobs")
 	if err != nil {
 		return nil, err
 	}
 
-	var jobs []JobConfig
+	var jobs []model.JobTemplate
 	err = json.Unmarshal(resp.Body(), &jobs)
 	if err != nil {
 		return nil, err
@@ -114,7 +124,7 @@ func (cm *ConfigurationManager) getJobConfigs() ([]JobConfig, error) {
 	return jobs, nil
 }
 
-func (cm *ConfigurationManager) writeJobConfig(jobConfig JobConfig) error {
+func (cm *ConfigurationManager) writeJobTemplate(jobConfig model.JobTemplate) error {
 	execDir, err := getExecutableDir()
 	if err != nil {
 		return err
@@ -135,9 +145,9 @@ func (cm *ConfigurationManager) writeJobConfig(jobConfig JobConfig) error {
 	return nil
 }
 
-func (cm *ConfigurationManager) writeJobConfigs(jobConfigs []JobConfig) error {
+func (cm *ConfigurationManager) writeJobTemplates(jobConfigs []model.JobTemplate) error {
 	for _, jobConfig := range jobConfigs {
-		err := cm.writeJobConfig(jobConfig)
+		err := cm.writeJobTemplate(jobConfig)
 		if err != nil {
 			return err
 		}
@@ -159,7 +169,7 @@ func (cm *ConfigurationManager) loadConfig(path string) error {
 	return nil
 }
 
-func (cm *ConfigurationManager) loadJobConfigs(path string) error {
+func (cm *ConfigurationManager) loadJobTemplates(path string) error {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to read directory: %w", err)
@@ -173,13 +183,13 @@ func (cm *ConfigurationManager) loadJobConfigs(path string) error {
 				return fmt.Errorf("failed to read file: %w", err)
 			}
 
-			var config JobConfig
+			var config model.JobTemplate
 			err = yaml.Unmarshal(data, &config)
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal yaml data: %w", err)
 			}
 
-			cm.jobConfigs = append(cm.jobConfigs, config)
+			cm.jobTemplates = append(cm.jobTemplates, config)
 		}
 	}
 
@@ -190,30 +200,32 @@ func (cm *ConfigurationManager) Config() Config {
 	return cm.config
 }
 
-func (cm *ConfigurationManager) Packages() []Package {
-	pluginInfoMap := make(map[string]Package)
+func (cm *ConfigurationManager) Packages() []model.Package {
+	pluginInfoMap := make(map[string]model.Package)
 
-	for _, config := range cm.jobConfigs {
-		for _, plugin := range config.Plugins {
-			key := plugin.Package + plugin.Version
-			if _, exists := pluginInfoMap[key]; !exists {
-				info := Package{
-					Name:    plugin.Package,
-					Version: plugin.Version,
+	for _, template := range cm.jobTemplates {
+		for _, activity := range template.Activities {
+			for _, plugin := range activity.Plugins {
+				key := plugin.Package + plugin.Version
+				if _, exists := pluginInfoMap[key]; !exists {
+					info := model.Package{
+						Name:    plugin.Package,
+						Version: plugin.Version,
+					}
+					pluginInfoMap[key] = info
 				}
-				pluginInfoMap[key] = info
 			}
 		}
 	}
 
-	pluginInfos := make([]Package, 0, len(pluginInfoMap))
+	packages := make([]model.Package, 0, len(pluginInfoMap))
 	for _, info := range pluginInfoMap {
-		pluginInfos = append(pluginInfos, info)
+		packages = append(packages, info)
 	}
 
-	return pluginInfos
+	return packages
 }
 
-func (cm *ConfigurationManager) JobConfigs() []JobConfig {
-	return cm.jobConfigs
+func (cm *ConfigurationManager) JobTemplates() []model.JobTemplate {
+	return cm.jobTemplates
 }

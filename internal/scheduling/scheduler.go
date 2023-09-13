@@ -3,10 +3,10 @@ package scheduling
 import (
 	"context"
 	"github.com/compliance-framework/assessment-runtime/internal/job"
+	"github.com/compliance-framework/assessment-runtime/internal/model"
 	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
 	"sync"
 
-	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,12 +17,12 @@ type JobFunc func()
 // Scheduler represents a scheduler service.
 type Scheduler struct {
 	c                  *cron.Cron
-	configs            []config.JobConfig
+	configs            []model.JobTemplate
 	runningAssessments sync.Map
 	collector          *job.Collector
 }
 
-func NewScheduler(assessmentConfigs []config.JobConfig) *Scheduler {
+func NewScheduler(assessmentConfigs []model.JobTemplate) *Scheduler {
 	s := &Scheduler{
 		c:         cron.New(cron.WithSeconds()),
 		configs:   assessmentConfigs,
@@ -39,8 +39,6 @@ func (s *Scheduler) Start(ctx context.Context) {
 			log.WithFields(log.Fields{
 				"assessment-id": assessmentConfig.AssessmentId,
 				"ssp-id":        assessmentConfig.SspId,
-				"control-id":    assessmentConfig.ControlId,
-				"component-id":  assessmentConfig.ControlId,
 			}).Errorf("Failed to add assessment job: %s", err)
 			// TODO: We should report this back to the control plane.
 			continue
@@ -72,15 +70,13 @@ func (s *Scheduler) Stop() {
 }
 
 // addJob adds an assessment job to the scheduler.
-func (s *Scheduler) addJob(ctx context.Context, assessmentConfig config.JobConfig) error {
+func (s *Scheduler) addJob(ctx context.Context, assessmentConfig model.JobTemplate) error {
 	jobFn := func() {
 		runner, err := job.NewRunner(assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"assessment-id": assessmentConfig.AssessmentId,
 				"ssp-id":        assessmentConfig.SspId,
-				"control-id":    assessmentConfig.ControlId,
-				"component-id":  assessmentConfig.ControlId,
 			}).Errorf("Failed to create assessment: %s", err)
 
 			pubsub.Publish(pubsub.Event{

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
+	"github.com/compliance-framework/assessment-runtime/internal/event"
 	"github.com/compliance-framework/assessment-runtime/internal/registry"
 	"github.com/compliance-framework/assessment-runtime/internal/scheduling"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ func main() {
 		log.Fatalf("Failed to create configuration manager: %s", err)
 	}
 
-	err = events.Connect(confManager.Config().EventBusURL)
+	err = event.Connect(confManager.Config().EventBusURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to event bus: %s", err)
 	}
@@ -42,7 +43,7 @@ func main() {
 		log.Errorf("Error downloading some of the plugins: %s", err)
 	}
 
-	scheduler := scheduling.NewScheduler(confManager.JobConfigs())
+	scheduler := scheduling.NewScheduler(confManager.JobTemplates())
 
 	wg.Add(1)
 	go func() {

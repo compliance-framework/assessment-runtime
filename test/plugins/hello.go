@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	. "github.com/compliance-framework/assessment-runtime/internal/plugin"
+	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

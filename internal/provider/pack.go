@@ -1,8 +1,8 @@
-package plugin
+package provider
 
 import (
 	"fmt"
-	"github.com/compliance-framework/assessment-runtime/internal/config"
+	"github.com/compliance-framework/assessment-runtime/internal/model"
 	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -12,14 +12,14 @@ import (
 )
 
 type Pack struct {
-	cfg     config.JobConfig
-	Clients map[string]*goplugin.Client
+	jobTemplate model.JobTemplate
+	Clients     map[string]*goplugin.Client
 }
 
-func NewPluginPack(cfg config.JobConfig) (*Pack, error) {
+func NewPluginPack(cfg model.JobTemplate) (*Pack, error) {
 	p := &Pack{
-		cfg:     cfg,
-		Clients: make(map[string]*goplugin.Client),
+		jobTemplate: cfg,
+		Clients:     make(map[string]*goplugin.Client),
 	}
 
 	err := p.LoadPlugins()
@@ -31,9 +31,11 @@ func NewPluginPack(cfg config.JobConfig) (*Pack, error) {
 }
 
 func (p *Pack) LoadPlugins() error {
-	pluginMap := make(map[string][]config.PluginConfig)
-	for _, pluginConfig := range p.cfg.Plugins {
-		pluginMap[pluginConfig.Package] = append(pluginMap[pluginConfig.Package], pluginConfig)
+	pluginMap := make(map[string][]model.Plugin)
+	for _, activity := range p.jobTemplate.Activities {
+		for _, plugin := range activity.Plugins {
+			pluginMap[plugin.Package] = append(pluginMap[plugin.Package], *plugin)
+		}
 	}
 
 	ex, err := os.Executable()

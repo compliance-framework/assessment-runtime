@@ -1,8 +1,8 @@
 package job
 
-import "github.com/compliance-framework/assessment-runtime/internal/plugin"
+import "github.com/compliance-framework/assessment-runtime/internal/provider"
 
 type Result struct {
 	AssessmentId string
-	Outputs      map[string]*plugin.ActionOutput
+	Outputs      map[string]*provider.ActionOutput
 }
