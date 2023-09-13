@@ -95,12 +95,12 @@ func (cm *ConfigurationManager) Listen() {
 					if change.Type == "created" || change.Type == "updated" {
 						err := cm.writeJobTemplate(change.Data)
 						if err != nil {
-							log.Errorf("failed to write job config: %s for job: %s", err, change.Data.Uuid)
+							log.Errorf("failed to write job config: %s for job: %s", err, change.Data.Id)
 						}
 					} else if change.Type == "delete" {
-						err := os.Remove(filepath.Join("assessments", change.Data.Uuid+".yaml"))
+						err := os.Remove(filepath.Join("assessments", change.Data.Id+".yaml"))
 						if err != nil {
-							log.Errorf("failed to delete job config: %s for job: %s", err, change.Data.Uuid)
+							log.Errorf("failed to delete job config: %s for job: %s", err, change.Data.Id)
 						}
 					}
 				}
@@ -137,7 +137,7 @@ func (cm *ConfigurationManager) writeJobTemplate(jobConfig model.JobTemplate) er
 		return fmt.Errorf("failed to marshal yaml data: %w", err)
 	}
 
-	err = os.WriteFile(filepath.Join(configPath, jobConfig.Uuid+".yaml"), data, 0644)
+	err = os.WriteFile(filepath.Join(configPath, jobConfig.Id+".yaml"), data, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
@@ -205,15 +205,13 @@ func (cm *ConfigurationManager) Packages() []model.Package {
 
 	for _, template := range cm.jobTemplates {
 		for _, activity := range template.Activities {
-			for _, plugin := range activity.Plugins {
-				key := plugin.Package + plugin.Version
-				if _, exists := pluginInfoMap[key]; !exists {
-					info := model.Package{
-						Name:    plugin.Package,
-						Version: plugin.Version,
-					}
-					pluginInfoMap[key] = info
+			key := activity.Plugin.Package + activity.Plugin.Version
+			if _, exists := pluginInfoMap[key]; !exists {
+				info := model.Package{
+					Name:    activity.Plugin.Package,
+					Version: activity.Plugin.Version,
 				}
+				pluginInfoMap[key] = info
 			}
 		}
 	}

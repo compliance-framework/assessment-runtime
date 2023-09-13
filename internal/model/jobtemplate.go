@@ -1,12 +1,11 @@
 package model
 
 type JobTemplate struct {
-	Uuid         string     `yaml:"uuid" json:"uuid" query:"uuid"`
-	RuntimeUuid  string     `yaml:"runtime-id" json:"runtime-id"`
+	Id           string     `yaml:"id" json:"id" query:"id"`
+	RuntimeId    string     `yaml:"runtime-id" json:"runtime-id"`
 	SspId        string     `yaml:"ssp-id,omitempty" json:"ssp-id,omitempty"`
 	AssessmentId string     `yaml:"assessment-id" json:"assessment-id"`
 	TaskId       string     `yaml:"task-id" json:"task-id"`
-	ActivityId   string     `yaml:"activity-id,omitempty" json:"activity-id,omitempty"`
 	Schedule     string     `yaml:"schedule" json:"schedule"`
 	Activities   []Activity `yaml:"activities,omitempty" json:"activities,omitempty"`
 }
@@ -15,7 +14,7 @@ type Activity struct {
 	Id         string    `yaml:"id" json:"id"`
 	Selector   *Selector `json:"selector"`
 	ControlId  string    `yaml:"control-id,omitempty" json:"control-id,omitempty"`
-	Plugins    []*Plugin `yaml:"plugins,omitempty" json:"plugins,omitempty"`
+	Plugin     *Plugin   `yaml:"plugin,omitempty" json:"plugin,omitempty"`
 	Parameters []*Pair   `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
@@ -27,7 +26,7 @@ type Selector struct {
 }
 
 type Plugin struct {
-	Uuid          string  `json:"uuid"`
+	Id            string  `json:"id"`
 	Name          string  `json:"name"`
 	Package       string  `json:"package"`
 	Version       string  `json:"version"`

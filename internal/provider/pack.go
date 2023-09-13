@@ -33,9 +33,7 @@ func NewPluginPack(cfg model.JobTemplate) (*Pack, error) {
 func (p *Pack) LoadPlugins() error {
 	pluginMap := make(map[string][]model.Plugin)
 	for _, activity := range p.jobTemplate.Activities {
-		for _, plugin := range activity.Plugins {
-			pluginMap[plugin.Package] = append(pluginMap[plugin.Package], *plugin)
-		}
+		pluginMap[activity.Plugin.Package] = append(pluginMap[activity.Plugin.Package], *activity.Plugin)
 	}
 
 	ex, err := os.Executable()

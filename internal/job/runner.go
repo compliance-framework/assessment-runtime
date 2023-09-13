@@ -36,42 +36,40 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 	var mu sync.Mutex
 
 	for _, activity := range r.jobTemplate.Activities {
-		for _, pluginConfig := range activity.Plugins {
-			wg.Add(1)
-			go func(pluginConfig *model.Plugin) {
-				defer wg.Done()
+		wg.Add(1)
+		go func(pluginConfig *model.Plugin) {
+			defer wg.Done()
 
-				pluginName := pluginConfig.Name
+			pluginName := pluginConfig.Name
 
-				select {
-				case <-ctx.Done():
-					log.WithField("plugin", pluginName).Info("execution cancelled")
-					mu.Lock()
-					outputs[pluginName] = &provider.ActionOutput{
-						Error: fmt.Errorf("execution cancelled").Error(),
-					}
-					mu.Unlock()
-					return
-				default:
-					input := provider.ActionInput{
-						AssessmentId: r.jobTemplate.AssessmentId,
-						SSPId:        r.jobTemplate.SspId,
-					}
-
-					output, err := r.executor.ExecutePlugin(pluginName, &input)
-					mu.Lock()
-					if err != nil {
-						outputs[pluginName] = &provider.ActionOutput{
-							Error: err.Error(),
-						}
-						log.WithField("plugin", pluginName).Error(err)
-					} else {
-						outputs[pluginName] = output
-					}
-					mu.Unlock()
+			select {
+			case <-ctx.Done():
+				log.WithField("plugin", pluginName).Info("execution cancelled")
+				mu.Lock()
+				outputs[pluginName] = &provider.ActionOutput{
+					Error: fmt.Errorf("execution cancelled").Error(),
 				}
-			}(pluginConfig)
-		}
+				mu.Unlock()
+				return
+			default:
+				input := provider.ActionInput{
+					AssessmentId: r.jobTemplate.AssessmentId,
+					SSPId:        r.jobTemplate.SspId,
+				}
+
+				output, err := r.executor.ExecutePlugin(pluginName, &input)
+				mu.Lock()
+				if err != nil {
+					outputs[pluginName] = &provider.ActionOutput{
+						Error: err.Error(),
+					}
+					log.WithField("plugin", pluginName).Error(err)
+				} else {
+					outputs[pluginName] = output
+				}
+				mu.Unlock()
+			}
+		}(activity.Plugin)
 	}
 
 	wg.Wait()
