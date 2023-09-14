@@ -16,24 +16,24 @@ type JobFunc func()
 
 // Scheduler represents a scheduler service.
 type Scheduler struct {
-	c                  *cron.Cron
-	configs            []model.JobTemplate
-	runningAssessments sync.Map
-	collector          *job.Collector
+	c            *cron.Cron
+	jobTemplates []model.JobTemplate
+	runners      sync.Map
+	collector    *job.Collector
 }
 
-func NewScheduler(assessmentConfigs []model.JobTemplate) *Scheduler {
+func NewScheduler(jobTemplates []model.JobTemplate) *Scheduler {
 	s := &Scheduler{
-		c:         cron.New(cron.WithSeconds()),
-		configs:   assessmentConfigs,
-		collector: job.NewCollector(),
+		c:            cron.New(cron.WithSeconds()),
+		jobTemplates: jobTemplates,
+		collector:    job.NewCollector(),
 	}
 	return s
 }
 
 // Start starts the scheduler and runs the assessments based on the configured schedule.
 func (s *Scheduler) Start(ctx context.Context) {
-	for _, assessmentConfig := range s.configs {
+	for _, assessmentConfig := range s.jobTemplates {
 		err := s.addJob(ctx, assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -56,7 +56,7 @@ func (s *Scheduler) Stop() {
 
 	var wg sync.WaitGroup
 
-	s.runningAssessments.Range(func(key, value interface{}) bool {
+	s.runners.Range(func(key, value interface{}) bool {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -70,33 +70,33 @@ func (s *Scheduler) Stop() {
 }
 
 // addJob adds an assessment job to the scheduler.
-func (s *Scheduler) addJob(ctx context.Context, assessmentConfig model.JobTemplate) error {
+func (s *Scheduler) addJob(ctx context.Context, jobTemplate model.JobTemplate) error {
 	jobFn := func() {
-		runner, err := job.NewRunner(assessmentConfig)
+		runner, err := job.NewRunner(jobTemplate)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"assessment-id": assessmentConfig.AssessmentId,
-				"ssp-id":        assessmentConfig.SspId,
+				"assessment-id": jobTemplate.AssessmentId,
+				"ssp-id":        jobTemplate.SspId,
 			}).Errorf("Failed to create assessment: %s", err)
 
 			pubsub.Publish(pubsub.Event{
 				Type: pubsub.AssessmentFailed,
-				Data: assessmentConfig.AssessmentId,
+				Data: jobTemplate.AssessmentId,
 			})
 			return
 		}
 
 		defer runner.Stop()
 
-		s.runningAssessments.Store(assessmentConfig.AssessmentId, runner)
+		s.runners.Store(jobTemplate.AssessmentId, runner)
 		result := runner.Run(ctx)
 		s.collector.Process(job.Result{
-			AssessmentId: assessmentConfig.AssessmentId,
+			AssessmentId: jobTemplate.AssessmentId,
 			Outputs:      result,
 		})
-		s.runningAssessments.Delete(assessmentConfig.AssessmentId)
+		s.runners.Delete(jobTemplate.AssessmentId)
 	}
 
-	_, err := s.c.AddFunc(assessmentConfig.Schedule, jobFn)
+	_, err := s.c.AddFunc(jobTemplate.Schedule, jobFn)
 	return err
 }
