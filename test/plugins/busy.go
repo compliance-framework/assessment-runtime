@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"google.golang.org/protobuf/types/known/structpb"
 	"math/rand"
@@ -13,8 +12,8 @@ type BusyPlugin struct {
 	message  string
 }
 
-func (p *BusyPlugin) Init() error {
-	return nil
+func (p *BusyPlugin) EvaluateSelector(selector *SubjectSelector) (*SubjectList, error) {
+	return nil, nil
 }
 
 func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
@@ -29,10 +28,6 @@ func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
 	return &ActionOutput{
 		ResultData: s,
 	}, nil
-}
-
-func (p *BusyPlugin) Shutdown(context.Context) error {
-	return nil
 }
 
 func main() {

@@ -7,19 +7,20 @@ import (
 )
 
 type Plugin interface {
+	EvaluateSelector(*SubjectSelector) (*SubjectList, error)
 	Execute(*ActionInput) (*ActionOutput, error)
 }
 
-type AssessmentActionGRPCPlugin struct {
+type GrpcPlugin struct {
 	goplugin.Plugin
 	Impl Plugin
 }
 
-func (p *AssessmentActionGRPCPlugin) GRPCServer(broker *goplugin.GRPCBroker, s *grpc.Server) error {
-	RegisterActionServiceServer(s, &grpcServer{Impl: p.Impl})
+func (p *GrpcPlugin) GRPCServer(broker *goplugin.GRPCBroker, s *grpc.Server) error {
+	RegisterJobServiceServer(s, &grpcServer{Impl: p.Impl})
 	return nil
 }
 
-func (p *AssessmentActionGRPCPlugin) GRPCClient(_ context.Context, _ *goplugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
-	return &grpcClient{client: NewActionServiceClient(c)}, nil
+func (p *GrpcPlugin) GRPCClient(_ context.Context, _ *goplugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
+	return &grpcClient{client: NewJobServiceClient(c)}, nil
 }

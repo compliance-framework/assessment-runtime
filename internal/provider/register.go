@@ -13,7 +13,7 @@ func Register(plugins map[string]Plugin) {
 
 	pluginSet := goplugin.PluginSet{}
 	for name, plugin := range plugins {
-		pluginSet[name] = &AssessmentActionGRPCPlugin{Impl: plugin}
+		pluginSet[name] = &GrpcPlugin{Impl: plugin}
 	}
 
 	goplugin.Serve(&goplugin.ServeConfig{

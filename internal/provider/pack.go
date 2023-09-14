@@ -47,7 +47,7 @@ func (p *Pack) LoadPlugins() error {
 		pluginMap := make(map[string]goplugin.Plugin)
 		for _, pluginConfig := range plugins {
 			log.WithField("plugin", pluginConfig.Name).Info("Loading plugin")
-			pluginMap[pluginConfig.Name] = &AssessmentActionGRPCPlugin{}
+			pluginMap[pluginConfig.Name] = &GrpcPlugin{}
 		}
 		pluginsPath := filepath.Join(filepath.Dir(ex), "./plugins")
 		packagePath := fmt.Sprintf("%s/%s/%s/%s", pluginsPath, pkg, plugins[0].Version, pkg)

@@ -43,3 +43,23 @@ type Expression struct {
 	Operator string   `json:"operator"`
 	Values   []string `json:"values"`
 }
+
+type Observation struct {
+	SubjectId   string `json:"subject-id"`
+	Description string `json:"description"` // Holds the observation text (couldn't find a better name)
+}
+
+type Risk struct {
+	SubjectId   string `json:"subject-id"`
+	Description string `json:"description"` // Holds the risk text
+	Impact      string `json:"impact"`      // Holds the impact text
+}
+
+type JobResult struct {
+	Id           string `json:"id"`
+	RuntimeId    string `json:"runtime-id"` // only if the control-plane doesn't listen to runtime specific topic
+	AssessmentId string `json:"assessment-id"`
+	ActivityId   string `json:"activity-id"`
+	Observations []*Observation
+	Risks        []*Risk
+}

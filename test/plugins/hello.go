@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -9,8 +8,8 @@ import (
 type Hello struct {
 }
 
-func (p *Hello) Init() error {
-	return nil
+func (p *Hello) EvaluateSelector(selector *SubjectSelector) (*SubjectList, error) {
+	return nil, nil
 }
 
 func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
@@ -24,10 +23,6 @@ func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
 	return &ActionOutput{
 		ResultData: s,
 	}, nil
-}
-
-func (p *Hello) Shutdown(context.Context) error {
-	return nil
 }
 
 func main() {
