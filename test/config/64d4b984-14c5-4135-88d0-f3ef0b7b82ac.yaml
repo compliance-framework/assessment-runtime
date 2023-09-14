@@ -13,7 +13,7 @@ activities:
       labels:
         classification: "c3"
     plugin:
-      name: "busy-plugin"
+      name: "busy"
       package: "busy"
       version: "1.0.0"
       configuration:

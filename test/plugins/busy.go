@@ -12,7 +12,7 @@ type BusyPlugin struct {
 	message  string
 }
 
-func (p *BusyPlugin) EvaluateSelector(selector *SubjectSelector) (*SubjectList, error) {
+func (p *BusyPlugin) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
 	return nil, nil
 }
 
@@ -32,7 +32,7 @@ func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
 
 func main() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	Register("busy-plugin", &BusyPlugin{
+	Register(&BusyPlugin{
 		duration: time.Duration(r.Intn(10)) * time.Second,
 		message:  "Busy Provider completed",
 	})

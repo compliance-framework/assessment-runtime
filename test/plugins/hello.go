@@ -8,7 +8,7 @@ import (
 type Hello struct {
 }
 
-func (p *Hello) EvaluateSelector(selector *SubjectSelector) (*SubjectList, error) {
+func (p *Hello) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
 	return nil, nil
 }
 
@@ -26,5 +26,5 @@ func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
 }
 
 func main() {
-	Register("hello-plugin", &Hello{})
+	Register(&Hello{})
 }
