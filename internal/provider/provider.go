@@ -6,14 +6,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Plugin interface {
+type Provider interface {
 	EvaluateSelector(*SubjectSelector) (*SubjectList, error)
 	Execute(*ActionInput) (*ActionOutput, error)
 }
 
 type GrpcPlugin struct {
 	goplugin.Plugin
-	Impl Plugin
+	Impl Provider
 }
 
 func (p *GrpcPlugin) GRPCServer(broker *goplugin.GRPCBroker, s *grpc.Server) error {

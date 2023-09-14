@@ -32,10 +32,8 @@ func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
 
 func main() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	pluginsMap := make(map[string]Plugin)
-	pluginsMap["busy-plugin"] = &BusyPlugin{
+	Register("busy-plugin", &BusyPlugin{
 		duration: time.Duration(r.Intn(10)) * time.Second,
-		message:  "Busy Plugin completed",
-	}
-	Register(pluginsMap)
+		message:  "Busy Provider completed",
+	})
 }

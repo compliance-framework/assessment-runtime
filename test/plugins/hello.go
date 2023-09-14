@@ -26,7 +26,5 @@ func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
 }
 
 func main() {
-	Register(map[string]Plugin{
-		"hello-plugin": &Hello{},
-	})
+	Register("hello-plugin", &Hello{})
 }

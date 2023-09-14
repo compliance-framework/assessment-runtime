@@ -15,7 +15,7 @@ func (c *grpcClient) Execute(input *ActionInput) (*ActionOutput, error) {
 }
 
 type grpcServer struct {
-	Impl Plugin
+	Impl Provider
 }
 
 func (c *grpcServer) EvaluateSelector(ctx context.Context, selector *SubjectSelector) (*SubjectList, error) {

@@ -41,7 +41,7 @@ func (e *Executor) ExecutePlugin(name string, input *ActionInput) (*ActionOutput
 		return nil, err
 	}
 
-	plg := raw.(Plugin)
+	plg := raw.(Provider)
 	output, err := plg.Execute(input)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -53,7 +53,7 @@ func (e *Executor) ExecutePlugin(name string, input *ActionInput) (*ActionOutput
 	log.WithFields(log.Fields{
 		"plugin": name,
 		"output": output,
-	}).Info("Plugin executed successfully")
+	}).Info("Provider executed successfully")
 
 	return output, nil
 }
