@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package plugin;
+option go_package = "./provider";
+
+message Expression {
+  string Key = 1;
+  string Operator = 2;
+  repeated string Values = 3;
+}
+
+message SubjectSelector {
+  string Query = 1;
+  map<string, string> Labels = 2;
+  repeated Expression Expressions = 3;
+  repeated string Ids = 4;
+}
+
+message Subject {
+  string Id = 1;
+  map<string, string> Labels = 2;
+}
+
+message SubjectList {
+  repeated Subject Subjects = 1;
+}
+
+message ActionInput {
+  string AssessmentId = 1;
+  string SSPId = 2;
+  string ControlId = 3;
+  string ComponentId = 4;
+  map<string, string> Config = 5;
+  map<string, string> Parameters = 6;
+}
+
+message ActionOutput {
+  string SSPId = 1;
+  string ControlId = 2;
+  string ComponentId = 3;
+  string AssessmentID = 4;
+  bool Compliant = 5;
+  google.protobuf.Struct ResultData = 6;
+  string Error = 7;
+}
+
+service JobService {
+  rpc EvaluateSelector (SubjectSelector) returns (SubjectList);
+  rpc Execute (ActionInput) returns (ActionOutput);
+}

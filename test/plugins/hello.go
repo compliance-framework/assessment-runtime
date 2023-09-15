@@ -1,16 +1,15 @@
 package main
 
 import (
-	"context"
-	. "github.com/compliance-framework/assessment-runtime/internal/plugin"
+	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Hello struct {
 }
 
-func (p *Hello) Init() error {
-	return nil
+func (p *Hello) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
+	return nil, nil
 }
 
 func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
@@ -26,12 +25,6 @@ func (p *Hello) Execute(_ *ActionInput) (*ActionOutput, error) {
 	}, nil
 }
 
-func (p *Hello) Shutdown(context.Context) error {
-	return nil
-}
-
 func main() {
-	Register(map[string]Plugin{
-		"hello-plugin": &Hello{},
-	})
+	Register(&Hello{})
 }

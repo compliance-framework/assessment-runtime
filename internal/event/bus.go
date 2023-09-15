@@ -1,4 +1,4 @@
-package bus
+package event
 
 import (
 	"encoding/json"
