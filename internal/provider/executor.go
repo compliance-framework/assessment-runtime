@@ -15,7 +15,7 @@ func NewExecutor(pluginManager *Pack) *Executor {
 	}
 }
 
-func (e *Executor) ExecutePlugin(name string, input *ActionInput) (*ActionOutput, error) {
+func (e *Executor) Execute(name string, input *ActionInput) (*ActionOutput, error) {
 	client, ok := e.pluginManager.Clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)

@@ -33,12 +33,12 @@ func NewScheduler(jobSpecs []model.JobSpec) *Scheduler {
 
 // Start starts the scheduler and runs the assessments based on the configured schedule.
 func (s *Scheduler) Start(ctx context.Context) {
-	for _, assessmentConfig := range s.specs {
-		err := s.addJob(ctx, assessmentConfig)
+	for _, spec := range s.specs {
+		err := s.addJob(ctx, spec)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"assessment-id": assessmentConfig.AssessmentId,
-				"ssp-id":        assessmentConfig.SspId,
+				"assessment-id": spec.AssessmentId,
+				"ssp-id":        spec.SspId,
 			}).Errorf("Failed to add assessment job: %s", err)
 			// TODO: We should report this back to the control plane.
 			continue
