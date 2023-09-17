@@ -12,11 +12,11 @@ import (
 )
 
 type Pack struct {
-	jobTemplate model.JobTemplate
+	jobTemplate model.JobSpec
 	Clients     map[string]*goplugin.Client
 }
 
-func NewPluginPack(cfg model.JobTemplate) (*Pack, error) {
+func NewPluginPack(cfg model.JobSpec) (*Pack, error) {
 	p := &Pack{
 		jobTemplate: cfg,
 		Clients:     make(map[string]*goplugin.Client),
