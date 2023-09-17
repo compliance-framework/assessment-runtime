@@ -57,7 +57,7 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 					SSPId:        r.spec.SspId,
 				}
 
-				output, err := r.executor.ExecutePlugin(pluginName, &input)
+				output, err := r.executor.Execute(pluginName, &input)
 				mu.Lock()
 				if err != nil {
 					outputs[pluginName] = &provider.ActionOutput{

@@ -12,14 +12,14 @@ import (
 )
 
 type Pack struct {
-	jobTemplate model.JobSpec
-	Clients     map[string]*goplugin.Client
+	jobSpec model.JobSpec
+	Clients map[string]*goplugin.Client
 }
 
 func NewPluginPack(cfg model.JobSpec) (*Pack, error) {
 	p := &Pack{
-		jobTemplate: cfg,
-		Clients:     make(map[string]*goplugin.Client),
+		jobSpec: cfg,
+		Clients: make(map[string]*goplugin.Client),
 	}
 
 	err := p.LoadPlugins()
@@ -32,7 +32,7 @@ func NewPluginPack(cfg model.JobSpec) (*Pack, error) {
 
 func (p *Pack) LoadPlugins() error {
 	pluginMap := make(map[string][]model.Plugin)
-	for _, activity := range p.jobTemplate.Activities {
+	for _, activity := range p.jobSpec.Activities {
 		pluginMap[activity.Plugin.Package] = append(pluginMap[activity.Plugin.Package], *activity.Plugin)
 	}
 
