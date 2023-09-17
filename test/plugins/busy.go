@@ -1,25 +1,30 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"google.golang.org/protobuf/types/known/structpb"
-	"math/rand"
-	"time"
+	"strconv"
 )
 
 type BusyPlugin struct {
-	duration time.Duration
-	message  string
+	message string
 }
 
 func (p *BusyPlugin) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
-	return nil, nil
+	subjects := make([]*Subject, 0)
+	for i := 0; i < 3; i++ {
+		subjects = append(subjects, &Subject{Id: strconv.Itoa(i)})
+	}
+	list := &SubjectList{
+		Subjects: subjects,
+	}
+	return list, nil
 }
 
-func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
-	time.Sleep(p.duration)
+func (p *BusyPlugin) Execute(in *ActionInput) (*ActionOutput, error) {
 	data := map[string]interface{}{
-		"message": p.message,
+		"message": fmt.Sprintf("busy provider completed for subject: %s %s", in.Subject.Id, p.message),
 	}
 	s, err := structpb.NewStruct(data)
 	if err != nil {
@@ -31,9 +36,7 @@ func (p *BusyPlugin) Execute(_ *ActionInput) (*ActionOutput, error) {
 }
 
 func main() {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	Register(&BusyPlugin{
-		duration: time.Duration(r.Intn(10)) * time.Second,
-		message:  "Busy Provider completed",
+		message: "busy provider completed",
 	})
 }

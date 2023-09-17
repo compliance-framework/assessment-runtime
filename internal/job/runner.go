@@ -75,7 +75,7 @@ func (r *Runner) loadProviders() error {
 	return nil
 }
 
-func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.ActionOutput, error) {
+func (r *Runner) provider(name string) (provider.Provider, error) {
 	client, ok := r.clients[name]
 	if !ok {
 		err := fmt.Errorf("plugin %s not found", name)
@@ -101,19 +101,77 @@ func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.Ac
 		return nil, err
 	}
 
-	plg := raw.(provider.Provider)
-	output, err := plg.Execute(input)
+	return raw.(provider.Provider), nil
+}
+
+func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
+	for _, activity := range r.spec.Activities {
+		if activity.Id == activityId {
+			p, err := r.provider(activity.Plugin.Name)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"plugin": activity.Plugin.Name,
+					"error":  err,
+				}).Error("failed to get provider")
+				return nil, err
+			}
+
+			expressions := make([]*provider.Expression, 0)
+			for _, expression := range activity.Selector.Expressions {
+				expressions = append(expressions, &provider.Expression{
+					Key:      expression.Key,
+					Operator: expression.Operator,
+					Values:   expression.Values,
+				})
+			}
+
+			selector := &provider.SubjectSelector{
+				Query:       activity.Selector.Query,
+				Labels:      activity.Selector.Labels,
+				Expressions: expressions,
+				Ids:         activity.Selector.Ids,
+			}
+			subjects, err := p.EvaluateSelector(selector)
+
+			if err != nil {
+				log.WithFields(log.Fields{
+					"provider": activity.Plugin.Name,
+					"error":    err,
+				}).Error("failed to evaluate selector")
+				return nil, err
+			}
+
+			return subjects.Subjects, nil
+		}
+	}
+
+	err := fmt.Errorf("activity %s not found", activityId)
+	log.WithField("activity", activityId).Error(err)
+	return nil, err
+}
+
+func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.ActionOutput, error) {
+	p, err := r.provider(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"provider": name,
+			"error":    err,
+		}).Error("failed to get provider")
+		return nil, err
+	}
+
+	output, err := p.Execute(input)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"plugin": name,
 			"error":  err,
-		}).Error("Failed to execute plugin")
+		}).Error("failed to execute plugin")
 		return nil, err
 	}
 	log.WithFields(log.Fields{
 		"plugin": name,
 		"output": output,
-	}).Info("Provider executed successfully")
+	}).Info("provider executed successfully")
 
 	return output, nil
 }
@@ -124,41 +182,59 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 	var mu sync.Mutex
 
 	for _, activity := range r.spec.Activities {
-		wg.Add(1)
-		go func(pluginConfig *model.Plugin) {
-			defer wg.Done()
+		subjects, err := r.subjects(activity.Id)
+		if err != nil {
+			log.WithField("activity", activity.Id).Error(err)
+			continue
+		}
 
-			pluginName := pluginConfig.Name
+		if len(subjects) == 0 {
+			log.WithField("activity", activity.Id).Info("no subjects found")
+			continue
+		}
 
-			select {
-			case <-ctx.Done():
-				// TODO: Propagate cancellation to GRPC plugins
-				log.WithField("plugin", pluginName).Info("execution cancelled")
-				mu.Lock()
-				outputs[pluginName] = &provider.ActionOutput{
-					Error: fmt.Errorf("execution cancelled").Error(),
-				}
-				mu.Unlock()
-				return
-			default:
-				input := provider.ActionInput{
-					AssessmentId: r.spec.AssessmentId,
-					SSPId:        r.spec.SspId,
-				}
+		for _, subject := range subjects {
+			wg.Add(1)
 
-				output, err := r.execute(pluginName, &input)
-				mu.Lock()
-				if err != nil {
+			go func(subject *provider.Subject, pluginConfig *model.Plugin) {
+				defer wg.Done()
+
+				pluginName := pluginConfig.Name
+
+				select {
+				case <-ctx.Done():
+					// TODO: Propagate cancellation to GRPC plugins
+					log.WithField("plugin", pluginName).Info("execution cancelled")
+					mu.Lock()
 					outputs[pluginName] = &provider.ActionOutput{
-						Error: err.Error(),
+						Error: fmt.Errorf("execution cancelled").Error(),
 					}
-					log.WithField("plugin", pluginName).Error(err)
-				} else {
-					outputs[pluginName] = output
+					mu.Unlock()
+					return
+				default:
+					input := provider.ActionInput{
+						Subject:      subject,
+						AssessmentId: r.spec.AssessmentId,
+						SSPId:        r.spec.SspId,
+					}
+
+					output, err := r.execute(pluginName, &input)
+					mu.Lock()
+					if err != nil {
+						outputs[pluginName] = &provider.ActionOutput{
+							Subject: subject,
+							Error:   err.Error(),
+						}
+						log.WithField("plugin", pluginName).Error(err)
+					} else {
+						outputs[pluginName] = output
+					}
+					mu.Unlock()
 				}
-				mu.Unlock()
-			}
-		}(activity.Plugin)
+			}(subject, activity.Plugin)
+
+		}
+
 	}
 
 	wg.Wait()

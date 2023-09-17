@@ -28,22 +28,24 @@ message SubjectList {
 }
 
 message ActionInput {
-  string AssessmentId = 1;
-  string SSPId = 2;
-  string ControlId = 3;
-  string ComponentId = 4;
-  map<string, string> Config = 5;
-  map<string, string> Parameters = 6;
+  Subject Subject = 1;
+  string AssessmentId = 2;
+  string SSPId = 3;
+  string ControlId = 4;
+  string ComponentId = 5;
+  map<string, string> Config = 6;
+  map<string, string> Parameters = 7;
 }
 
 message ActionOutput {
-  string SSPId = 1;
-  string ControlId = 2;
-  string ComponentId = 3;
-  string AssessmentID = 4;
-  bool Compliant = 5;
-  google.protobuf.Struct ResultData = 6;
-  string Error = 7;
+  Subject Subject = 1;
+  string SSPId = 2;
+  string ControlId = 3;
+  string ComponentId = 4;
+  string AssessmentID = 5;
+  bool Compliant = 6;
+  google.protobuf.Struct ResultData = 7;
+  string Error = 8;
 }
 
 service JobService {
