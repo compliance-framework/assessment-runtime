@@ -22,7 +22,7 @@ func NewPluginPack(cfg model.JobSpec) (*Pack, error) {
 		Clients: make(map[string]*goplugin.Client),
 	}
 
-	err := p.LoadPlugins()
+	err := p.Load()
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func NewPluginPack(cfg model.JobSpec) (*Pack, error) {
 	return p, nil
 }
 
-func (p *Pack) LoadPlugins() error {
+func (p *Pack) Load() error {
 	pluginMap := make(map[string][]model.Plugin)
 	for _, activity := range p.jobSpec.Activities {
 		pluginMap[activity.Plugin.Package] = append(pluginMap[activity.Plugin.Package], *activity.Plugin)
@@ -73,7 +73,7 @@ func (p *Pack) LoadPlugins() error {
 	return nil
 }
 
-func (p *Pack) UnloadPlugins() {
+func (p *Pack) Unload() {
 	log.Info("unloading plugins")
 
 	var wg sync.WaitGroup
