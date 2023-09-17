@@ -1,6 +1,6 @@
 package model
 
-type JobTemplate struct {
+type JobSpec struct {
 	Id           string     `yaml:"id" json:"id" query:"id"`
 	RuntimeId    string     `yaml:"runtime-id" json:"runtime-id"`
 	SspId        string     `yaml:"ssp-id,omitempty" json:"ssp-id,omitempty"`

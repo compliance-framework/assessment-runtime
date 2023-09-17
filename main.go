@@ -43,7 +43,7 @@ func main() {
 		log.Errorf("Error downloading some of the plugins: %s", err)
 	}
 
-	scheduler := scheduling.NewScheduler(confManager.JobTemplates())
+	scheduler := scheduling.NewScheduler(confManager.JobSpecs())
 
 	wg.Add(1)
 	go func() {

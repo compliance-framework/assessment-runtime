@@ -23,9 +23,9 @@ type Config struct {
 }
 
 type ConfigurationManager struct {
-	config       Config
-	jobTemplates []model.JobTemplate
-	client       *resty.Client
+	config   Config
+	jobSpecs []model.JobSpec
+	client   *resty.Client
 }
 
 func getExecutableDir() (string, error) {
@@ -54,17 +54,17 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	jobs, err := cm.getJobTemplates()
+	jobs, err := cm.getJobSpecs()
 	if err != nil {
 		log.Warn("failed to get job configurations from control plane. loading jobs from local config")
-		err = cm.loadJobTemplates(assessmentPath)
+		err = cm.loadJobSpecs(assessmentPath)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cm.jobTemplates = jobs
+		cm.jobSpecs = jobs
 
-		err = cm.writeJobTemplates(jobs)
+		err = cm.writeJobSpecs(jobs)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func (cm *ConfigurationManager) Listen() {
 				for _, change := range changes {
 					log.Infof("received job configuration change: %s", change.Type)
 					if change.Type == "created" || change.Type == "updated" {
-						err := cm.writeJobTemplate(change.Data)
+						err := cm.writeJobSpec(change.Data)
 						if err != nil {
 							log.Errorf("failed to write job config: %s for job: %s", err, change.Data.Id)
 						}
@@ -109,13 +109,13 @@ func (cm *ConfigurationManager) Listen() {
 	}()
 }
 
-func (cm *ConfigurationManager) getJobTemplates() ([]model.JobTemplate, error) {
+func (cm *ConfigurationManager) getJobSpecs() ([]model.JobSpec, error) {
 	resp, err := cm.client.R().Get(cm.config.ControlPlaneURL + "/runtime/jobs")
 	if err != nil {
 		return nil, err
 	}
 
-	var jobs []model.JobTemplate
+	var jobs []model.JobSpec
 	err = json.Unmarshal(resp.Body(), &jobs)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (cm *ConfigurationManager) getJobTemplates() ([]model.JobTemplate, error) {
 	return jobs, nil
 }
 
-func (cm *ConfigurationManager) writeJobTemplate(jobConfig model.JobTemplate) error {
+func (cm *ConfigurationManager) writeJobSpec(jobConfig model.JobSpec) error {
 	execDir, err := getExecutableDir()
 	if err != nil {
 		return err
@@ -145,9 +145,9 @@ func (cm *ConfigurationManager) writeJobTemplate(jobConfig model.JobTemplate) er
 	return nil
 }
 
-func (cm *ConfigurationManager) writeJobTemplates(jobConfigs []model.JobTemplate) error {
+func (cm *ConfigurationManager) writeJobSpecs(jobConfigs []model.JobSpec) error {
 	for _, jobConfig := range jobConfigs {
-		err := cm.writeJobTemplate(jobConfig)
+		err := cm.writeJobSpec(jobConfig)
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func (cm *ConfigurationManager) loadConfig(path string) error {
 	return nil
 }
 
-func (cm *ConfigurationManager) loadJobTemplates(path string) error {
+func (cm *ConfigurationManager) loadJobSpecs(path string) error {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to read directory: %w", err)
@@ -183,13 +183,13 @@ func (cm *ConfigurationManager) loadJobTemplates(path string) error {
 				return fmt.Errorf("failed to read file: %w", err)
 			}
 
-			var config model.JobTemplate
+			var config model.JobSpec
 			err = yaml.Unmarshal(data, &config)
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal yaml data: %w", err)
 			}
 
-			cm.jobTemplates = append(cm.jobTemplates, config)
+			cm.jobSpecs = append(cm.jobSpecs, config)
 		}
 	}
 
@@ -203,7 +203,7 @@ func (cm *ConfigurationManager) Config() Config {
 func (cm *ConfigurationManager) Packages() []model.Package {
 	pluginInfoMap := make(map[string]model.Package)
 
-	for _, template := range cm.jobTemplates {
+	for _, template := range cm.jobSpecs {
 		for _, activity := range template.Activities {
 			key := activity.Plugin.Package + activity.Plugin.Version
 			if _, exists := pluginInfoMap[key]; !exists {
@@ -224,6 +224,6 @@ func (cm *ConfigurationManager) Packages() []model.Package {
 	return packages
 }
 
-func (cm *ConfigurationManager) JobTemplates() []model.JobTemplate {
-	return cm.jobTemplates
+func (cm *ConfigurationManager) JobSpecs() []model.JobSpec {
+	return cm.jobSpecs
 }

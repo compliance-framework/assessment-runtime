@@ -10,14 +10,14 @@ import (
 )
 
 type Runner struct {
-	jobTemplate model.JobTemplate
-	pack        *provider.Pack
-	executor    *provider.Executor
+	spec     model.JobSpec
+	pack     *provider.Pack
+	executor *provider.Executor
 }
 
-func NewRunner(cfg model.JobTemplate) (*Runner, error) {
+func NewRunner(cfg model.JobSpec) (*Runner, error) {
 	a := &Runner{
-		jobTemplate: cfg,
+		spec: cfg,
 	}
 
 	pluginManager, err := provider.NewPluginPack(cfg)
@@ -35,7 +35,7 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, activity := range r.jobTemplate.Activities {
+	for _, activity := range r.spec.Activities {
 		wg.Add(1)
 		go func(pluginConfig *model.Plugin) {
 			defer wg.Done()
@@ -53,8 +53,8 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 				return
 			default:
 				input := provider.ActionInput{
-					AssessmentId: r.jobTemplate.AssessmentId,
-					SSPId:        r.jobTemplate.SspId,
+					AssessmentId: r.spec.AssessmentId,
+					SSPId:        r.spec.SspId,
 				}
 
 				output, err := r.executor.ExecutePlugin(pluginName, &input)

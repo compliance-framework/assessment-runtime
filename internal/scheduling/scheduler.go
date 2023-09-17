@@ -16,24 +16,24 @@ type JobFunc func()
 
 // Scheduler represents a scheduler service.
 type Scheduler struct {
-	c            *cron.Cron
-	jobTemplates []model.JobTemplate
-	runners      sync.Map
-	collector    *job.Collector
+	c         *cron.Cron
+	specs     []model.JobSpec
+	runners   sync.Map
+	collector *job.Collector
 }
 
-func NewScheduler(jobTemplates []model.JobTemplate) *Scheduler {
+func NewScheduler(jobSpecs []model.JobSpec) *Scheduler {
 	s := &Scheduler{
-		c:            cron.New(cron.WithSeconds()),
-		jobTemplates: jobTemplates,
-		collector:    job.NewCollector(),
+		c:         cron.New(cron.WithSeconds()),
+		specs:     jobSpecs,
+		collector: job.NewCollector(),
 	}
 	return s
 }
 
 // Start starts the scheduler and runs the assessments based on the configured schedule.
 func (s *Scheduler) Start(ctx context.Context) {
-	for _, assessmentConfig := range s.jobTemplates {
+	for _, assessmentConfig := range s.specs {
 		err := s.addJob(ctx, assessmentConfig)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -70,33 +70,33 @@ func (s *Scheduler) Stop() {
 }
 
 // addJob adds an assessment job to the scheduler.
-func (s *Scheduler) addJob(ctx context.Context, jobTemplate model.JobTemplate) error {
+func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 	jobFn := func() {
-		runner, err := job.NewRunner(jobTemplate)
+		runner, err := job.NewRunner(spec)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"assessment-id": jobTemplate.AssessmentId,
-				"ssp-id":        jobTemplate.SspId,
+				"assessment-id": spec.AssessmentId,
+				"ssp-id":        spec.SspId,
 			}).Errorf("Failed to create assessment: %s", err)
 
 			pubsub.Publish(pubsub.Event{
 				Type: pubsub.AssessmentFailed,
-				Data: jobTemplate.AssessmentId,
+				Data: spec.AssessmentId,
 			})
 			return
 		}
 
 		defer runner.Stop()
 
-		s.runners.Store(jobTemplate.AssessmentId, runner)
+		s.runners.Store(spec.AssessmentId, runner)
 		result := runner.Run(ctx)
 		s.collector.Process(job.Result{
-			AssessmentId: jobTemplate.AssessmentId,
+			AssessmentId: spec.AssessmentId,
 			Outputs:      result,
 		})
-		s.runners.Delete(jobTemplate.AssessmentId)
+		s.runners.Delete(spec.AssessmentId)
 	}
 
-	_, err := s.c.AddFunc(jobTemplate.Schedule, jobFn)
+	_, err := s.c.AddFunc(spec.Schedule, jobFn)
 	return err
 }
