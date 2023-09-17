@@ -15,18 +15,17 @@ type Runner struct {
 	executor *provider.Executor
 }
 
-func NewRunner(cfg model.JobSpec) (*Runner, error) {
+func NewRunner(spec model.JobSpec) (*Runner, error) {
 	a := &Runner{
-		spec: cfg,
+		spec: spec,
 	}
 
-	pluginManager, err := provider.NewPluginPack(cfg)
+	pack, err := provider.NewPluginPack(spec)
 	if err != nil {
 		return nil, err
 	}
-	a.pack = pluginManager
-	a.executor = provider.NewExecutor(pluginManager)
-
+	a.pack = pack
+	a.executor = provider.NewExecutor(pack)
 	return a, nil
 }
 
@@ -44,6 +43,7 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 
 			select {
 			case <-ctx.Done():
+				// TODO: Propagate cancellation to GRPC plugins
 				log.WithField("plugin", pluginName).Info("execution cancelled")
 				mu.Lock()
 				outputs[pluginName] = &provider.ActionOutput{
@@ -78,5 +78,5 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 }
 
 func (r *Runner) Stop() {
-	r.pack.UnloadPlugins()
+	r.pack.Unload()
 }
