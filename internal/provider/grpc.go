@@ -10,7 +10,7 @@ func (c *grpcClient) EvaluateSelector(selector *SubjectSelector) (*SubjectList, 
 	return c.client.EvaluateSelector(context.Background(), selector)
 }
 
-func (c *grpcClient) Execute(input *ActionInput) (*ActionOutput, error) {
+func (c *grpcClient) Execute(input *JobInput) (*JobResult, error) {
 	return c.client.Execute(context.Background(), input)
 }
 
@@ -22,6 +22,6 @@ func (c *grpcServer) EvaluateSelector(ctx context.Context, selector *SubjectSele
 	return c.Impl.EvaluateSelector(selector)
 }
 
-func (c *grpcServer) Execute(ctx context.Context, input *ActionInput) (*ActionOutput, error) {
+func (c *grpcServer) Execute(ctx context.Context, input *JobInput) (*JobResult, error) {
 	return c.Impl.Execute(input)
 }

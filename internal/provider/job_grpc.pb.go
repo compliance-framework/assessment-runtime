@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JobServiceClient interface {
 	EvaluateSelector(ctx context.Context, in *SubjectSelector, opts ...grpc.CallOption) (*SubjectList, error)
-	Execute(ctx context.Context, in *ActionInput, opts ...grpc.CallOption) (*ActionOutput, error)
+	Execute(ctx context.Context, in *JobInput, opts ...grpc.CallOption) (*JobResult, error)
 }
 
 type jobServiceClient struct {
@@ -48,8 +48,8 @@ func (c *jobServiceClient) EvaluateSelector(ctx context.Context, in *SubjectSele
 	return out, nil
 }
 
-func (c *jobServiceClient) Execute(ctx context.Context, in *ActionInput, opts ...grpc.CallOption) (*ActionOutput, error) {
-	out := new(ActionOutput)
+func (c *jobServiceClient) Execute(ctx context.Context, in *JobInput, opts ...grpc.CallOption) (*JobResult, error) {
+	out := new(JobResult)
 	err := c.cc.Invoke(ctx, JobService_Execute_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (c *jobServiceClient) Execute(ctx context.Context, in *ActionInput, opts ..
 // for forward compatibility
 type JobServiceServer interface {
 	EvaluateSelector(context.Context, *SubjectSelector) (*SubjectList, error)
-	Execute(context.Context, *ActionInput) (*ActionOutput, error)
+	Execute(context.Context, *JobInput) (*JobResult, error)
 }
 
 // UnimplementedJobServiceServer should be embedded to have forward compatible implementations.
@@ -72,7 +72,7 @@ type UnimplementedJobServiceServer struct {
 func (UnimplementedJobServiceServer) EvaluateSelector(context.Context, *SubjectSelector) (*SubjectList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EvaluateSelector not implemented")
 }
-func (UnimplementedJobServiceServer) Execute(context.Context, *ActionInput) (*ActionOutput, error) {
+func (UnimplementedJobServiceServer) Execute(context.Context, *JobInput) (*JobResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Execute not implemented")
 }
 
@@ -106,7 +106,7 @@ func _JobService_EvaluateSelector_Handler(srv interface{}, ctx context.Context, 
 }
 
 func _JobService_Execute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ActionInput)
+	in := new(JobInput)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func _JobService_Execute_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: JobService_Execute_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JobServiceServer).Execute(ctx, req.(*ActionInput))
+		return srv.(JobServiceServer).Execute(ctx, req.(*JobInput))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
-	"google.golang.org/protobuf/types/known/structpb"
 	"strconv"
 )
 
@@ -22,16 +20,42 @@ func (p *BusyPlugin) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) 
 	return list, nil
 }
 
-func (p *BusyPlugin) Execute(in *ActionInput) (*ActionOutput, error) {
-	data := map[string]interface{}{
-		"message": fmt.Sprintf("busy provider completed for subject: %s %s", in.Subject.Id, p.message),
+func (p *BusyPlugin) Execute(in *JobInput) (*JobResult, error) {
+	observations := make([]*Observation, 0)
+
+	obs := &Observation{
+		SubjectId:   in.SubjectId,
+		Title:       "Unencrypted Data Transmission",
+		Description: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
+		Collected:   "2022-01-01T00:00:00Z",
+		Expires:     "2022-12-31T23:59:59Z",
+		Links: []*Link{
+			{
+				Rel:  "related",
+				Href: "https://example.com/related-link",
+			},
+		},
+		Props: []*Property{
+			{
+				Name:  "Risk Level",
+				Value: "High",
+			},
+			{
+				Name:  "Recommendation",
+				Value: "Implement encryption methods for all data transmissions.",
+			},
+		},
+		RelevantEvidence: []*Evidence{
+			{
+				Description: "Automated tool log indicating lack of encryption in data transmission",
+			},
+		},
+		Remarks: "Immediate action required to mitigate potential data breaches.",
+		Uuid:    "123e4567-e89b-12d3-a456-426614174000",
 	}
-	s, err := structpb.NewStruct(data)
-	if err != nil {
-		return nil, err
-	}
-	return &ActionOutput{
-		ResultData: s,
+
+	return &JobResult{
+		Observations: append(observations, obs),
 	}, nil
 }
 
