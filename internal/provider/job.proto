@@ -1,9 +1,19 @@
 syntax = "proto3";
 
-import "google/protobuf/struct.proto";
-
 package plugin;
 option go_package = "./provider";
+
+message Property {
+  string Name = 1;
+  string Value = 2;
+}
+
+message LogEntry {
+  string Start = 1;
+  string End = 2;
+  string Title = 3;
+  string Description = 4;
+}
 
 message Expression {
   string Key = 1;
@@ -20,35 +30,70 @@ message SubjectSelector {
 
 message Subject {
   string Id = 1;
-  map<string, string> Labels = 2;
+  map<string, string> Props = 2;
 }
 
 message SubjectList {
   repeated Subject Subjects = 1;
 }
 
-message ActionInput {
-  Subject Subject = 1;
-  string AssessmentId = 2;
-  string SSPId = 3;
-  string ControlId = 4;
-  string ComponentId = 5;
-  map<string, string> Config = 6;
+message Link {
+  string Href = 1;
+  string MediaType = 2;
+  string Rel = 3;
+  string ResourceFragment = 4;
+  string Text = 5;
+}
+
+message Evidence {
+  string Description = 1;
+  string Href = 2;
+  repeated Link Links = 3;
+  repeated Property Props = 4;
+  string Remarks = 5;
+}
+
+message Observation {
+  string Uuid = 1;
+  string SubjectId = 2;
+  string Collected = 3;
+  string Title = 4;
+  string Description = 5;
+  string Expires = 6;
+  string Remarks = 7;
+  repeated Link Links = 8;
+  repeated Property Props = 9;
+  repeated Evidence RelevantEvidence = 10;
+}
+
+message Risk {
+  string SubjectId = 1;
+  string Description = 2;
+  int32 Score = 3;
+}
+
+message JobInput {
+  string Id = 1;
+  string RuntimeId = 2;
+  string AssessmentId = 3;
+  string ActivityId = 4;
+  string SubjectId = 5;
   map<string, string> Parameters = 7;
 }
 
-message ActionOutput {
-  Subject Subject = 1;
-  string SSPId = 2;
-  string ControlId = 3;
-  string ComponentId = 4;
-  string AssessmentID = 5;
-  bool Compliant = 6;
-  google.protobuf.Struct ResultData = 7;
-  string Error = 8;
+message JobResult {
+  string Id = 1;
+  string RuntimeId = 2;
+  string AssessmentId = 3;
+  string ActivityId = 4;
+  string SubjectId = 5;
+  repeated Observation Observations = 6;
+  repeated Risk Risks = 7;
+  repeated LogEntry Logs = 8;
+  string Error = 9;
 }
 
 service JobService {
   rpc EvaluateSelector (SubjectSelector) returns (SubjectList);
-  rpc Execute (ActionInput) returns (ActionOutput);
+  rpc Execute (JobInput) returns (JobResult);
 }

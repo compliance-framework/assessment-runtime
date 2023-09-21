@@ -8,7 +8,7 @@ import (
 
 type Provider interface {
 	EvaluateSelector(*SubjectSelector) (*SubjectList, error)
-	Execute(*ActionInput) (*ActionOutput, error)
+	Execute(input *JobInput) (*JobResult, error)
 }
 
 type GrpcPlugin struct {

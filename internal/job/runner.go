@@ -150,7 +150,7 @@ func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
 	return nil, err
 }
 
-func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.ActionOutput, error) {
+func (r *Runner) execute(name string, input *provider.JobInput) (*provider.JobResult, error) {
 	p, err := r.provider(name)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -168,6 +168,7 @@ func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.Ac
 		}).Error("failed to execute plugin")
 		return nil, err
 	}
+
 	log.WithFields(log.Fields{
 		"plugin": name,
 		"output": output,
@@ -176,8 +177,8 @@ func (r *Runner) execute(name string, input *provider.ActionInput) (*provider.Ac
 	return output, nil
 }
 
-func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
-	outputs := make(map[string]*provider.ActionOutput)
+func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {
+	outputs := make(map[string]*provider.JobResult)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -196,9 +197,10 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 		for _, subject := range subjects {
 			wg.Add(1)
 
-			go func(subject *provider.Subject, pluginConfig *model.Plugin) {
+			go func(subject *provider.Subject, activity model.Activity) {
 				defer wg.Done()
 
+				pluginConfig := activity.Plugin
 				pluginName := pluginConfig.Name
 
 				select {
@@ -206,24 +208,30 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 					// TODO: Propagate cancellation to GRPC plugins
 					log.WithField("plugin", pluginName).Info("execution cancelled")
 					mu.Lock()
-					outputs[pluginName] = &provider.ActionOutput{
+					outputs[pluginName] = &provider.JobResult{
 						Error: fmt.Errorf("execution cancelled").Error(),
 					}
 					mu.Unlock()
 					return
 				default:
-					input := provider.ActionInput{
-						Subject:      subject,
+					params := make(map[string]string)
+					for _, pair := range activity.Parameters {
+						params[pair.Name] = pair.Value
+					}
+
+					input := provider.JobInput{
 						AssessmentId: r.spec.AssessmentId,
-						SSPId:        r.spec.SspId,
+						ActivityId:   activity.Id,
+						SubjectId:    subject.Id,
+						Parameters:   params,
 					}
 
 					output, err := r.execute(pluginName, &input)
 					mu.Lock()
 					if err != nil {
-						outputs[pluginName] = &provider.ActionOutput{
-							Subject: subject,
-							Error:   err.Error(),
+						outputs[pluginName] = &provider.JobResult{
+							SubjectId: subject.Id,
+							Error:     err.Error(),
 						}
 						log.WithField("plugin", pluginName).Error(err)
 					} else {
@@ -231,8 +239,7 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ActionOutput {
 					}
 					mu.Unlock()
 				}
-			}(subject, activity.Plugin)
-
+			}(subject, activity)
 		}
 
 	}
