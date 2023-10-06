@@ -78,13 +78,21 @@ This section explains how to run the Compliance Assessment Runtime System either
 
 ### Local Environment
 
-1. **Build and Prepare**: Execute `make start` in your command line. This will build both the `sampleplugin` and the runtime, and place them in the appropriate folder structure.
+1. **Setup**: Before you run `make run-local`, you need to:
 
-2. **Launch Runtime**: After the build process is complete, run the following command to launch the runtime:
+- Install nats server
 
-    ```bash
-    ./bin/ar
-    ```
+- Configure nats-server with jetstream, eg
+
+```
+host: 127.0.0.1
+port: 4222
+jetstream: enabled
+```
+
+- Ensure go 1.21+ is installed
+
+2. **Build and Prepare**: Execute `make run-local` in your command line. This will build both the `sampleplugin` and the runtime, and place them in the appropriate folder structure.
 
 ### Container Environment
 
