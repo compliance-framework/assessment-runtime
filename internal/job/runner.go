@@ -160,7 +160,7 @@ func (r *Runner) execute(name string, input *provider.JobInput) (*provider.JobRe
 		return nil, err
 	}
 
-	output, err := p.Execute(input)
+	result, err := p.Execute(input)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"plugin": name,
@@ -171,10 +171,10 @@ func (r *Runner) execute(name string, input *provider.JobInput) (*provider.JobRe
 
 	log.WithFields(log.Fields{
 		"plugin": name,
-		"output": output,
+		"result": result,
 	}).Info("provider executed successfully")
 
-	return output, nil
+	return result, nil
 }
 
 func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {

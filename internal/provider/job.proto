@@ -91,6 +91,7 @@ message JobResult {
   repeated Risk Risks = 7;
   repeated LogEntry Logs = 8;
   string Error = 9;
+  string State = 10;
 }
 
 service JobService {
