@@ -37,8 +37,9 @@ func (s *Scheduler) Start(ctx context.Context) {
 		err := s.addJob(ctx, spec)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"assessment-id": spec.AssessmentId,
-				"ssp-id":        spec.SspId,
+				"id":                 spec.Id,
+				"assessment-plan-id": spec.PlanId,
+				"title":              spec.Title,
 			}).Errorf("Failed to add assessment job: %s", err)
 			// TODO: We should report this back to the control plane.
 			continue
@@ -75,28 +76,47 @@ func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 		runner, err := job.NewRunner(spec)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"assessment-id": spec.AssessmentId,
-				"ssp-id":        spec.SspId,
+				"id":                 spec.Id,
+				"assessment-plan-id": spec.PlanId,
+				"title":              spec.Title,
 			}).Errorf("Failed to create assessment: %s", err)
 
 			pubsub.Publish(pubsub.Event{
 				Type: pubsub.AssessmentFailed,
-				Data: spec.AssessmentId,
+				Data: spec.PlanId,
 			})
 			return
 		}
 
 		defer runner.Stop()
 
-		s.runners.Store(spec.AssessmentId, runner)
+		s.runners.Store(spec.PlanId, runner)
+
 		result := runner.Run(ctx)
 		s.collector.Process(job.Result{
-			AssessmentId: spec.AssessmentId,
+			AssessmentId: spec.PlanId,
 			Outputs:      result,
 		})
-		s.runners.Delete(spec.AssessmentId)
+		s.runners.Delete(spec.PlanId)
 	}
 
-	_, err := s.c.AddFunc(spec.Schedule, jobFn)
-	return err
+	for _, task := range spec.Tasks {
+		_, err := s.c.AddFunc(task.Schedule, jobFn)
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"id":                 spec.Id,
+				"assessment-plan-id": spec.PlanId,
+				"title":              spec.Title,
+			}).Errorf("Failed to create assessment: %s", err)
+
+			pubsub.Publish(pubsub.Event{
+				Type: pubsub.AssessmentFailed,
+				Data: spec.PlanId,
+			})
+
+			return err
+		}
+	}
+	return nil
 }

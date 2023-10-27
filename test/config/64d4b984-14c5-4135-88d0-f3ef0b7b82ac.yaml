@@ -1,21 +1,29 @@
-uuid: "64d4b984-14c5-4135-88d0-f3ef0b7b82ac"
-ssp-id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bdad"
-assessment-id: "c758890a-e6e8-4e7f-88fd-9a2e5ea26d86"
+id: "64d4b984-14c5-4135-88d0-f3ef0b7b82ac"
+assessment-plan-id: "c758890a-e6e8-4e7f-88fd-9a2e5ea26d86"
 task-id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bd22"
-schedule: "*/10 * * * * *"
-activities:
-  - id: "0fb15295-b856-4d0d-9043-4c8fabda52be"
-    control-id: "ac-1"
-    parameters:
-      - name: "parameter-1"
-        value: "this-is-a-parameter-value"
-    selector:
-      labels:
-        classification: "c3"
-    plugin:
-      name: "busy"
-      package: "busy"
-      version: "1.0.0"
-      configuration:
-        - name: "compliance-level"
-          value: "high"
+title: "Sample Assessment on Kubernetes"
+tasks:
+  - id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bd22"
+    title: "Port Checks"
+    schedule: "*/10 * * * * *"
+    activities:
+      - id: "0fb15295-b856-4d0d-9043-4c8fabda52be"
+        title: "Port Check"
+        params:
+          parameter-1: "this-is-a-parameter-value"
+        selector:
+          labels:
+            ns: "default"
+        provider:
+          name: "busy"
+          package: "busy"
+          version: "1.0.0"
+          configuration:
+            "port": "8080"
+            "protocol": "tcp"
+            "timeout": "5"
+            "retries": "3"
+            "delay": "1"
+            "interval": "1"
+
+

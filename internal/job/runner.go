@@ -33,9 +33,11 @@ func NewRunner(spec model.JobSpec) (*Runner, error) {
 }
 
 func (r *Runner) loadProviders() error {
-	pluginMap := make(map[string][]model.Plugin)
-	for _, activity := range r.spec.Activities {
-		pluginMap[activity.Plugin.Package] = append(pluginMap[activity.Plugin.Package], *activity.Plugin)
+	pluginMap := make(map[string][]model.Provider)
+	for _, task := range r.spec.Tasks {
+		for _, activity := range task.Activities {
+			pluginMap[activity.Provider.Package] = append(pluginMap[activity.Provider.Package], activity.Provider)
+		}
 	}
 
 	ex, err := os.Executable()
@@ -105,43 +107,45 @@ func (r *Runner) provider(name string) (provider.Provider, error) {
 }
 
 func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
-	for _, activity := range r.spec.Activities {
-		if activity.Id == activityId {
-			p, err := r.provider(activity.Plugin.Name)
-			if err != nil {
-				log.WithFields(log.Fields{
-					"plugin": activity.Plugin.Name,
-					"error":  err,
-				}).Error("failed to get provider")
-				return nil, err
-			}
+	for _, task := range r.spec.Tasks {
+		for _, activity := range task.Activities {
+			if activity.Id == activityId {
+				p, err := r.provider(activity.Provider.Name)
+				if err != nil {
+					log.WithFields(log.Fields{
+						"plugin": activity.Provider.Name,
+						"error":  err,
+					}).Error("failed to get provider")
+					return nil, err
+				}
 
-			expressions := make([]*provider.Expression, 0)
-			for _, expression := range activity.Selector.Expressions {
-				expressions = append(expressions, &provider.Expression{
-					Key:      expression.Key,
-					Operator: expression.Operator,
-					Values:   expression.Values,
-				})
-			}
+				expressions := make([]*provider.Expression, 0)
+				for _, expression := range activity.Selector.Expressions {
+					expressions = append(expressions, &provider.Expression{
+						Key:      expression.Key,
+						Operator: expression.Operator,
+						Values:   expression.Values,
+					})
+				}
 
-			selector := &provider.SubjectSelector{
-				Query:       activity.Selector.Query,
-				Labels:      activity.Selector.Labels,
-				Expressions: expressions,
-				Ids:         activity.Selector.Ids,
-			}
-			subjects, err := p.EvaluateSelector(selector)
+				selector := &provider.SubjectSelector{
+					Query:       activity.Selector.Query,
+					Labels:      activity.Selector.Labels,
+					Expressions: expressions,
+					Ids:         activity.Selector.Ids,
+				}
+				subjects, err := p.EvaluateSelector(selector)
 
-			if err != nil {
-				log.WithFields(log.Fields{
-					"provider": activity.Plugin.Name,
-					"error":    err,
-				}).Error("failed to evaluate selector")
-				return nil, err
-			}
+				if err != nil {
+					log.WithFields(log.Fields{
+						"provider": activity.Provider.Name,
+						"error":    err,
+					}).Error("failed to evaluate selector")
+					return nil, err
+				}
 
-			return subjects.Subjects, nil
+				return subjects.Subjects, nil
+			}
 		}
 	}
 
@@ -182,66 +186,68 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	for _, activity := range r.spec.Activities {
-		subjects, err := r.subjects(activity.Id)
-		if err != nil {
-			log.WithField("activity", activity.Id).Error(err)
-			continue
-		}
+	for _, task := range r.spec.Tasks {
+		for _, activity := range task.Activities {
+			subjects, err := r.subjects(activity.Id)
+			if err != nil {
+				log.WithField("activity", activity.Id).Error(err)
+				continue
+			}
 
-		if len(subjects) == 0 {
-			log.WithField("activity", activity.Id).Info("no subjects found")
-			continue
-		}
+			if len(subjects) == 0 {
+				log.WithField("activity", activity.Id).Info("no subjects found")
+				continue
+			}
 
-		for _, subject := range subjects {
-			wg.Add(1)
+			for _, subject := range subjects {
+				wg.Add(1)
 
-			go func(subject *provider.Subject, activity model.Activity) {
-				defer wg.Done()
+				go func(subject *provider.Subject, activity model.Activity) {
+					defer wg.Done()
 
-				pluginConfig := activity.Plugin
-				pluginName := pluginConfig.Name
+					pluginConfig := activity.Provider
+					pluginName := pluginConfig.Name
 
-				select {
-				case <-ctx.Done():
-					// TODO: Propagate cancellation to GRPC plugins
-					log.WithField("plugin", pluginName).Info("execution cancelled")
-					mu.Lock()
-					outputs[pluginName] = &provider.JobResult{
-						Error: fmt.Errorf("execution cancelled").Error(),
-					}
-					mu.Unlock()
-					return
-				default:
-					params := make(map[string]string)
-					for _, pair := range activity.Parameters {
-						params[pair.Name] = pair.Value
-					}
-
-					input := provider.JobInput{
-						AssessmentId: r.spec.AssessmentId,
-						ActivityId:   activity.Id,
-						SubjectId:    subject.Id,
-						Parameters:   params,
-					}
-
-					output, err := r.execute(pluginName, &input)
-					mu.Lock()
-					if err != nil {
+					select {
+					case <-ctx.Done():
+						// TODO: Propagate cancellation to GRPC plugins
+						log.WithField("plugin", pluginName).Info("execution cancelled")
+						mu.Lock()
 						outputs[pluginName] = &provider.JobResult{
-							SubjectId: subject.Id,
-							Error:     err.Error(),
+							Error: fmt.Errorf("execution cancelled").Error(),
 						}
-						log.WithField("plugin", pluginName).Error(err)
-					} else {
-						outputs[pluginName] = output
-					}
-					mu.Unlock()
-				}
-			}(subject, activity)
-		}
+						mu.Unlock()
+						return
+					default:
+						params := make(map[string]string)
+						for name, value := range activity.Params {
+							params[name] = value
+						}
 
+						input := provider.JobInput{
+							AssessmentId: r.spec.PlanId,
+							ActivityId:   activity.Id,
+							SubjectId:    subject.Id,
+							Parameters:   params,
+						}
+
+						output, err := r.execute(pluginName, &input)
+						mu.Lock()
+						if err != nil {
+							outputs[pluginName] = &provider.JobResult{
+								SubjectId: subject.Id,
+								Error:     err.Error(),
+							}
+							log.WithField("plugin", pluginName).Error(err)
+						} else {
+							outputs[pluginName] = output
+						}
+						mu.Unlock()
+					}
+				}(subject, activity)
+			}
+
+		}
 	}
 
 	wg.Wait()
