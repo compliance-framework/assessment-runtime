@@ -77,7 +77,7 @@ message JobInput {
   string RuntimeId = 2;
   string AssessmentId = 3;
   string ActivityId = 4;
-  string SubjectId = 5;
+  Subject Subject = 5;
   map<string, string> Parameters = 7;
 }
 

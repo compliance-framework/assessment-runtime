@@ -83,7 +83,7 @@ type LogEntry struct {
 	Start       string `protobuf:"bytes,1,opt,name=Start,proto3" json:"Start,omitempty"`
 	End         string `protobuf:"bytes,2,opt,name=End,proto3" json:"End,omitempty"`
 	Title       string `protobuf:"bytes,3,opt,name=Title,proto3" json:"Title,omitempty"`
-	Description string `protobuf:"bytes,4,opt,name=Description,proto3" json:"Description,omitempty"`
+	Description string `protobuf:"bytes,4,opt,name=Remarks,proto3" json:"Remarks,omitempty"`
 }
 
 func (x *LogEntry) Reset() {
@@ -466,7 +466,7 @@ type Evidence struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Description string      `protobuf:"bytes,1,opt,name=Description,proto3" json:"Description,omitempty"`
+	Description string      `protobuf:"bytes,1,opt,name=Remarks,proto3" json:"Remarks,omitempty"`
 	Href        string      `protobuf:"bytes,2,opt,name=Href,proto3" json:"Href,omitempty"`
 	Links       []*Link     `protobuf:"bytes,3,rep,name=Links,proto3" json:"Links,omitempty"`
 	Props       []*Property `protobuf:"bytes,4,rep,name=Props,proto3" json:"Props,omitempty"`
@@ -549,7 +549,7 @@ type Observation struct {
 	SubjectId        string      `protobuf:"bytes,2,opt,name=SubjectId,proto3" json:"SubjectId,omitempty"`
 	Collected        string      `protobuf:"bytes,3,opt,name=Collected,proto3" json:"Collected,omitempty"`
 	Title            string      `protobuf:"bytes,4,opt,name=Title,proto3" json:"Title,omitempty"`
-	Description      string      `protobuf:"bytes,5,opt,name=Description,proto3" json:"Description,omitempty"`
+	Description      string      `protobuf:"bytes,5,opt,name=Remarks,proto3" json:"Remarks,omitempty"`
 	Expires          string      `protobuf:"bytes,6,opt,name=Expires,proto3" json:"Expires,omitempty"`
 	Remarks          string      `protobuf:"bytes,7,opt,name=Remarks,proto3" json:"Remarks,omitempty"`
 	Links            []*Link     `protobuf:"bytes,8,rep,name=Links,proto3" json:"Links,omitempty"`
@@ -665,7 +665,7 @@ type Risk struct {
 	unknownFields protoimpl.UnknownFields
 
 	SubjectId   string `protobuf:"bytes,1,opt,name=SubjectId,proto3" json:"SubjectId,omitempty"`
-	Description string `protobuf:"bytes,2,opt,name=Description,proto3" json:"Description,omitempty"`
+	Description string `protobuf:"bytes,2,opt,name=Remarks,proto3" json:"Remarks,omitempty"`
 	Score       int32  `protobuf:"varint,3,opt,name=Score,proto3" json:"Score,omitempty"`
 }
 
@@ -729,7 +729,7 @@ type JobInput struct {
 
 	Id           string            `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	RuntimeId    string            `protobuf:"bytes,2,opt,name=RuntimeId,proto3" json:"RuntimeId,omitempty"`
-	AssessmentId string            `protobuf:"bytes,3,opt,name=AssessmentId,proto3" json:"AssessmentId,omitempty"`
+	AssessmentId string            `protobuf:"bytes,3,opt,name=PlanId,proto3" json:"PlanId,omitempty"`
 	ActivityId   string            `protobuf:"bytes,4,opt,name=ActivityId,proto3" json:"ActivityId,omitempty"`
 	SubjectId    string            `protobuf:"bytes,5,opt,name=SubjectId,proto3" json:"SubjectId,omitempty"`
 	Parameters   map[string]string `protobuf:"bytes,7,rep,name=Parameters,proto3" json:"Parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -816,7 +816,7 @@ type JobResult struct {
 
 	Id           string         `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	RuntimeId    string         `protobuf:"bytes,2,opt,name=RuntimeId,proto3" json:"RuntimeId,omitempty"`
-	AssessmentId string         `protobuf:"bytes,3,opt,name=AssessmentId,proto3" json:"AssessmentId,omitempty"`
+	AssessmentId string         `protobuf:"bytes,3,opt,name=PlanId,proto3" json:"PlanId,omitempty"`
 	ActivityId   string         `protobuf:"bytes,4,opt,name=ActivityId,proto3" json:"ActivityId,omitempty"`
 	SubjectId    string         `protobuf:"bytes,5,opt,name=SubjectId,proto3" json:"SubjectId,omitempty"`
 	Observations []*Observation `protobuf:"bytes,6,rep,name=Observations,proto3" json:"Observations,omitempty"`

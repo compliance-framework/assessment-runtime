@@ -79,7 +79,7 @@ func (cm *ConfigurationManager) Listen() {
 	topic := "runtime.configuration" //fmt.Sprintf(, cm.config.RuntimeId)
 
 	// Subscribe to job configuration updates
-	ch, err := event.Subscribe[[]model.ConfigChanged](topic)
+	ch, err := event.Subscribe[[]model.PlanPublished](topic)
 	if err != nil {
 		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
@@ -203,15 +203,17 @@ func (cm *ConfigurationManager) Config() Config {
 func (cm *ConfigurationManager) Packages() []model.Package {
 	pluginInfoMap := make(map[string]model.Package)
 
-	for _, template := range cm.jobSpecs {
-		for _, activity := range template.Activities {
-			key := activity.Plugin.Package + activity.Plugin.Version
-			if _, exists := pluginInfoMap[key]; !exists {
-				info := model.Package{
-					Name:    activity.Plugin.Package,
-					Version: activity.Plugin.Version,
+	for _, jobSpec := range cm.jobSpecs {
+		for _, task := range jobSpec.Tasks {
+			for _, activity := range task.Activities {
+				key := activity.Provider.Package + activity.Provider.Version
+				if _, exists := pluginInfoMap[key]; !exists {
+					info := model.Package{
+						Name:    activity.Provider.Package,
+						Version: activity.Provider.Version,
+					}
+					pluginInfoMap[key] = info
 				}
-				pluginInfoMap[key] = info
 			}
 		}
 	}
