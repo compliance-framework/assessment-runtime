@@ -32,11 +32,10 @@ type Task struct {
 }
 
 type Activity struct {
-	Id       string            `json:"id" yaml:"id"`
-	Title    string            `json:"title" yaml:"title"`
-	Selector Selector          `json:"selector" yaml:"selector"`
-	Provider Provider          `json:"provider" yaml:"provider"`
-	Params   map[string]string `json:"params" yaml:"params"`
+	Id       string   `json:"id" yaml:"id"`
+	Title    string   `json:"title" yaml:"title"`
+	Selector Selector `json:"selector" yaml:"selector"`
+	Provider Provider `json:"provider" yaml:"provider"`
 }
 
 type Selector struct {
@@ -49,10 +48,10 @@ type Selector struct {
 }
 
 type Provider struct {
-	Name    string            `json:"name" yaml:"name"`
-	Package string            `json:"package" yaml:"package"`
-	Version string            `json:"version" yaml:"version"`
-	Params  map[string]string `json:"params" yaml:"params"`
+	Name          string            `json:"name" yaml:"name"`
+	Package       string            `json:"package" yaml:"package"`
+	Version       string            `json:"version" yaml:"version"`
+	Configuration map[string]string `json:"configuration" yaml:"configuration"`
 }
 
 type Pair struct {

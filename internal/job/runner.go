@@ -106,19 +106,24 @@ func (r *Runner) provider(name string) (provider.Provider, error) {
 	return raw.(provider.Provider), nil
 }
 
-func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
+func (r *Runner) evaluate(activityId string) (*provider.EvaluateResult, error) {
 	for _, task := range r.spec.Tasks {
 		for _, activity := range task.Activities {
 			if activity.Id == activityId {
+
+				// Get the provider
 				p, err := r.provider(activity.Provider.Name)
 				if err != nil {
 					log.WithFields(log.Fields{
-						"plugin": activity.Provider.Name,
-						"error":  err,
+						"assessment-plan-id": r.spec.PlanId,
+						"task":               task.Id,
+						"activity":           activity.Id,
+						"error":              err,
 					}).Error("failed to get provider")
 					return nil, err
 				}
 
+				// Convert the expressions to the provider's format
 				expressions := make([]*provider.Expression, 0)
 				for _, expression := range activity.Selector.Expressions {
 					expressions = append(expressions, &provider.Expression{
@@ -142,7 +147,7 @@ func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
 						Ids:         activity.Selector.Ids,
 					},
 				}
-				subjects, err := p.Evaluate(input)
+				result, err := p.Evaluate(input)
 
 				if err != nil {
 					log.WithFields(log.Fields{
@@ -152,7 +157,7 @@ func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
 					return nil, err
 				}
 
-				return subjects.Subjects, nil
+				return result, nil
 			}
 		}
 	}
@@ -196,18 +201,30 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 
 	for _, task := range r.spec.Tasks {
 		for _, activity := range task.Activities {
-			subjects, err := r.subjects(activity.Id)
+
+			// Get evaluate for the activity
+			result, err := r.evaluate(activity.Id)
 			if err != nil {
-				log.WithField("activity", activity.Id).Error(err)
+				log.WithFields(log.Fields{
+					"assessment-plan-id": r.spec.PlanId,
+					"task":               task.Id,
+					"activity":           activity.Id,
+					"error":              err,
+				}).Error("failed to evaluate subject query")
 				continue
 			}
 
-			if len(subjects) == 0 {
-				log.WithField("activity", activity.Id).Info("no subjects found")
+			if len(result.Subjects) == 0 {
+				log.WithFields(log.Fields{
+					"assessment-plan-id": r.spec.PlanId,
+					"task":               task.Id,
+					"activity":           activity.Id,
+					"error":              err,
+				}).Warn("no evaluate found")
 				continue
 			}
 
-			for _, subject := range subjects {
+			for _, subject := range result.Subjects {
 				wg.Add(1)
 
 				go func(subject *provider.Subject, activity model.Activity) {
@@ -225,11 +242,6 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 						mu.Unlock()
 						return
 					default:
-						params := make(map[string]string)
-						for name, value := range activity.Params {
-							params[name] = value
-						}
-
 						// TODO: Add missing information to the input: ComponentId, ControlId, etc.
 						input := provider.ExecuteInput{
 							Plan: &provider.Plan{
@@ -237,6 +249,9 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 								TaskId:     task.Id,
 								ActivityId: activity.Id,
 							},
+							Subject:       subject,
+							Props:         result.Props,
+							Configuration: pluginConfig.Configuration,
 						}
 
 						output, err := r.execute(pluginName, &input)
@@ -252,7 +267,6 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 					}
 				}(subject, activity)
 			}
-
 		}
 	}
 
