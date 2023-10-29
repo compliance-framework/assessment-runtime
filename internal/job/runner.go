@@ -18,13 +18,13 @@ import (
 // We need another result type because the provider.ExecuteResult
 // doesn't hold information about the assessment plan, component, control, etc.
 type RunnerResult struct {
-	AssessmentId string
-	ComponentId  string
-	ControlId    string
-	TaskId       string
-	ActivityId   string
-	Results      *provider.ExecuteResult
-	Error        error
+	AssessmentId string                  `json:"assessment-id"`
+	ComponentId  string                  `json:"component-id"`
+	ControlId    string                  `json:"control-id"`
+	TaskId       string                  `json:"task-id"`
+	ActivityId   string                  `json:"activity-id"`
+	Error        error                   `json:"error"`
+	Results      *provider.ExecuteResult `json:"results"`
 }
 
 type Runner struct {
