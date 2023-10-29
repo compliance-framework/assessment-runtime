@@ -136,9 +136,11 @@ func (r *Runner) evaluate(activityId string) (*provider.EvaluateResult, error) {
 				// TODO: Add missing information to the input: ComponentId, ControlId, etc.
 				input := &provider.EvaluateInput{
 					Plan: &provider.Plan{
-						Id:         r.spec.PlanId,
-						TaskId:     task.Id,
-						ActivityId: activity.Id,
+						Id:          r.spec.PlanId,
+						ComponentId: r.spec.ComponentId,
+						ControlId:   r.spec.ControlId,
+						TaskId:      task.Id,
+						ActivityId:  activity.Id,
 					},
 					Selector: &provider.Selector{
 						Query:       activity.Selector.Query,
