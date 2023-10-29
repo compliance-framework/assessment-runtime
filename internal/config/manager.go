@@ -46,7 +46,7 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 	assessmentPath := filepath.Join(execDir, "assessments")
 
 	cm := &ConfigurationManager{
-		client: resty.New().SetRetryCount(3).SetRetryWaitTime(5 * time.Second).SetRetryMaxWaitTime(20 * time.Second),
+		client: resty.New().SetRetryCount(0).SetRetryWaitTime(5 * time.Second).SetRetryMaxWaitTime(20 * time.Second),
 	}
 
 	err = cm.loadConfig(configPath)
@@ -69,9 +69,6 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 			return nil, err
 		}
 	}
-
-	cm.Listen()
-
 	return cm, nil
 }
 
@@ -79,7 +76,7 @@ func (cm *ConfigurationManager) Listen() {
 	topic := "runtime.configuration" //fmt.Sprintf(, cm.config.RuntimeId)
 
 	// Subscribe to job configuration updates
-	ch, err := event.Subscribe[[]model.PlanPublished](topic)
+	ch, err := event.Subscribe[model.PlanEvent](topic)
 	if err != nil {
 		log.Errorf("failed to subscribe to job configuration updates: %s", err)
 	}
@@ -89,19 +86,17 @@ func (cm *ConfigurationManager) Listen() {
 	go func() {
 		for {
 			select {
-			case changes := <-ch:
-				for _, change := range changes {
-					log.Infof("received job configuration change: %s", change.Type)
-					if change.Type == "created" || change.Type == "updated" {
-						err := cm.writeJobSpec(change.Data)
-						if err != nil {
-							log.Errorf("failed to write job config: %s for job: %s", err, change.Data.Id)
-						}
-					} else if change.Type == "delete" {
-						err := os.Remove(filepath.Join("assessments", change.Data.Id+".yaml"))
-						if err != nil {
-							log.Errorf("failed to delete job config: %s for job: %s", err, change.Data.Id)
-						}
+			case planEvent := <-ch:
+				log.Infof("received job configuration change: %s", planEvent.Type)
+				if planEvent.Type == "created" || planEvent.Type == "updated" {
+					err := cm.writeJobSpec(planEvent.Data)
+					if err != nil {
+						log.Errorf("failed to write job config: %s for job: %s", err, planEvent.Data.Id)
+					}
+				} else if planEvent.Type == "delete" {
+					err := os.Remove(filepath.Join("assessments", planEvent.Data.Id+".yaml"))
+					if err != nil {
+						log.Errorf("failed to delete job config: %s for job: %s", err, planEvent.Data.Id)
 					}
 				}
 			}
