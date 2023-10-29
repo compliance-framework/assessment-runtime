@@ -11,6 +11,8 @@ type BusyPlugin struct {
 }
 
 func (p *BusyPlugin) Evaluate(*EvaluateInput) (*EvaluateResult, error) {
+	// Normally we execute some queries here based on the data inside the EvaluateInput.Selector and return a subject list.
+
 	subjects := make([]*Subject, 0)
 	for i := 0; i < 3; i++ {
 		// We fill the Props with the required information to be able to identify the subject later.
