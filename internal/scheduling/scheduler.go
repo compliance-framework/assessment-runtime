@@ -94,11 +94,9 @@ func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 		s.runners.Store(spec.PlanId, runner)
 
 		result := runner.Run(ctx)
+		log.Info(result)
 
-		s.collector.Process(job.Result{
-			AssessmentId: spec.PlanId,
-			Outputs:      result,
-		})
+		s.collector.Process(job.Result{Data: result})
 		s.runners.Delete(spec.PlanId)
 	}
 
