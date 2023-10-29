@@ -68,9 +68,18 @@ func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 		Remarks: "Immediate action required to mitigate potential data breaches.",
 	}
 
+	logs := []*LogEntry{
+		{
+			Timestamp: "2022-01-01T00:00:00Z",
+			Type:      LogType_DEBUG,
+			Details:   "The automated assessment tool detected that the application transmits sensitive data without encryption.",
+		},
+	}
+
 	return &ExecuteResult{
 		Status:       ExecutionStatus_SUCCESS,
 		Observations: []*Observation{obs},
+		Logs:         logs,
 	}, nil
 }
 

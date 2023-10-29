@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package plugin;
 option go_package = "./provider";
-import "google/protobuf/timestamp.proto";
 
 message Property {
   string Name = 1;
@@ -19,10 +18,9 @@ enum LogType {
 // LogEntry holds the logging information
 // TODO: We should introduce any.proto to hold different types of values
 message LogEntry {
-  string Id = 1;
-  google.protobuf.Timestamp Timestamp = 2;
-  LogType Type = 3;
-  string Details = 4;
+  string Timestamp = 1;
+  LogType Type = 2;
+  string Details = 3;
 }
 
 message Expression {
