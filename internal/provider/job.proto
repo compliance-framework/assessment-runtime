@@ -38,9 +38,22 @@ message Selector {
   repeated string Ids = 4;
 }
 
+enum SubjectType {
+  COMPONENT = 0;
+  INVENTORY_ITEM = 1;
+  LOCATION = 2;
+  PARTY = 3;
+  USER = 4;
+}
+
 message Subject {
   string Id = 1;
-  map<string, string> Props = 2;
+  SubjectType Type = 2;
+  string Title = 3;
+  string Description = 4;
+  repeated Link Links = 5;
+  map<string, string> Props = 6;
+  string Remarks = 7;
 }
 
 message SubjectList {
@@ -64,7 +77,7 @@ message Evidence {
 }
 
 message Observation {
-  string Uuid = 1;
+  string Id = 1;
   string SubjectId = 2;
   string Collected = 3;
   string Title = 4;
@@ -120,6 +133,9 @@ message ExecuteInput {
   Plan Plan = 1;
   Subject Subject = 2;
   map<string, string> Props = 3;
+
+  // Configuration is a map of configuration values that are passed to the provider
+  // Same as the EvaluateInput.Configuration
   map<string, string> Configuration = 4;
 }
 

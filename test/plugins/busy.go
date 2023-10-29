@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"strconv"
 )
@@ -12,16 +13,31 @@ type BusyPlugin struct {
 func (p *BusyPlugin) Evaluate(*EvaluateInput) (*EvaluateResult, error) {
 	subjects := make([]*Subject, 0)
 	for i := 0; i < 3; i++ {
-		subjects = append(subjects, &Subject{Id: strconv.Itoa(i)})
+		// We fill the Props with the required information to be able to identify the subject later.
+		// We can get this information inside the Execute function - ExecuteInput.Subject.Props["id"]
+		subjects = append(subjects, &Subject{
+			Id:    strconv.Itoa(i),
+			Type:  SubjectType_INVENTORY_ITEM,
+			Title: fmt.Sprintf("Busy Virtual Machine %d", i),
+			Props: map[string]string{
+				"id": strconv.Itoa(i),
+			},
+		})
 	}
 
+	// We can also add some props to the result. These props will be available in the Execute function to all the subjects.
+	// ExecuteInput.Props["namespace"]
 	return &EvaluateResult{
 		Subjects: subjects,
+		Props: map[string]string{
+			"namespace": "busy",
+		},
 	}, nil
 }
 
 func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 	obs := &Observation{
+		Id:          "123e4567-e89b-12d3-a456-426614174000",
 		Title:       "Unencrypted Data Transmission",
 		Description: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
 		Collected:   "2022-01-01T00:00:00Z",
@@ -48,7 +64,6 @@ func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 			},
 		},
 		Remarks: "Immediate action required to mitigate potential data breaches.",
-		Uuid:    "123e4567-e89b-12d3-a456-426614174000",
 	}
 
 	return &ExecuteResult{

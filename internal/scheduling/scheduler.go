@@ -2,6 +2,7 @@ package scheduling
 
 import (
 	"context"
+	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/job"
 	"github.com/compliance-framework/assessment-runtime/internal/model"
 	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
@@ -83,7 +84,7 @@ func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 
 			pubsub.Publish(pubsub.Event{
 				Type: pubsub.AssessmentFailed,
-				Data: spec.PlanId,
+				Data: fmt.Errorf("failed to create job runner: %w", err),
 			})
 			return
 		}
@@ -93,6 +94,7 @@ func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 		s.runners.Store(spec.PlanId, runner)
 
 		result := runner.Run(ctx)
+
 		s.collector.Process(job.Result{
 			AssessmentId: spec.PlanId,
 			Outputs:      result,
@@ -112,7 +114,7 @@ func (s *Scheduler) addJob(ctx context.Context, spec model.JobSpec) error {
 
 			pubsub.Publish(pubsub.Event{
 				Type: pubsub.AssessmentFailed,
-				Data: spec.PlanId,
+				Data: fmt.Errorf("failed to add scheduling function: %w", err),
 			})
 
 			return err
