@@ -2,7 +2,6 @@ package job
 
 import (
 	"github.com/compliance-framework/assessment-runtime/internal/event"
-	log "github.com/sirupsen/logrus"
 )
 
 type Collector struct {
@@ -13,13 +12,9 @@ func NewCollector() *Collector {
 }
 
 func (c *Collector) Process(result Result) {
-	log.WithFields(log.Fields{
-		"assessment-id": result.AssessmentId,
-	}).Infof("Processing result")
-
 	// For now, we just publish the event to the event bus without any processing
-	err := event.Publish[Result](result, `job.result`)
-	if err != nil {
-		return
+	for _, r := range result.Data {
+		// Not handling the error case for now and depending on NATS retry mechanism
+		_ = event.Publish[RunnerResult](r, `job.result`)
 	}
 }

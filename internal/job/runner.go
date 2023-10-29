@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/model"
 	"github.com/compliance-framework/assessment-runtime/internal/provider"
@@ -12,6 +13,19 @@ import (
 	"path/filepath"
 	"sync"
 )
+
+// RunnerResult represents the result of a runner execution.
+// We need another result type because the provider.ExecuteResult
+// doesn't hold information about the assessment plan, component, control, etc.
+type RunnerResult struct {
+	AssessmentId string
+	ComponentId  string
+	ControlId    string
+	TaskId       string
+	ActivityId   string
+	Results      *provider.ExecuteResult
+	Error        error
+}
 
 type Runner struct {
 	spec    model.JobSpec
@@ -196,8 +210,9 @@ func (r *Runner) execute(name string, input *provider.ExecuteInput) (*provider.E
 	return result, nil
 }
 
-func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
-	outputs := make(map[string]*provider.ExecuteResult)
+func (r *Runner) Run(ctx context.Context) []RunnerResult {
+	outputs := make([]RunnerResult, 0)
+
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -240,7 +255,9 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 						// TODO: Propagate cancellation to GRPC plugins
 						log.WithField("plugin", pluginName).Info("execution cancelled")
 						mu.Lock()
-						outputs[pluginName] = &provider.ExecuteResult{}
+						outputs = append(outputs, RunnerResult{
+							Error: errors.New("execution cancelled"),
+						})
 						mu.Unlock()
 						return
 					default:
@@ -259,11 +276,19 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
 						output, err := r.execute(pluginName, &input)
 						mu.Lock()
 						if err != nil {
-							// TODO: Add error information
-							outputs[pluginName] = &provider.ExecuteResult{}
+							outputs = append(outputs, RunnerResult{
+								Error: err,
+							})
 							log.WithField("plugin", pluginName).Error(err)
 						} else {
-							outputs[pluginName] = output
+							outputs = append(outputs, RunnerResult{
+								AssessmentId: r.spec.PlanId,
+								ComponentId:  r.spec.ComponentId,
+								ControlId:    r.spec.ControlId,
+								TaskId:       task.Id,
+								ActivityId:   activity.Id,
+								Results:      output,
+							})
 						}
 						mu.Unlock()
 					}
