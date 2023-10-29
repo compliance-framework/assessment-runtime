@@ -128,13 +128,21 @@ func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
 					})
 				}
 
-				selector := &provider.SubjectSelector{
-					Query:       activity.Selector.Query,
-					Labels:      activity.Selector.Labels,
-					Expressions: expressions,
-					Ids:         activity.Selector.Ids,
+				// TODO: Add missing information to the input: ComponentId, ControlId, etc.
+				input := &provider.EvaluateInput{
+					Plan: &provider.Plan{
+						Id:         r.spec.PlanId,
+						TaskId:     task.Id,
+						ActivityId: activity.Id,
+					},
+					Selector: &provider.Selector{
+						Query:       activity.Selector.Query,
+						Labels:      activity.Selector.Labels,
+						Expressions: expressions,
+						Ids:         activity.Selector.Ids,
+					},
 				}
-				subjects, err := p.EvaluateSelector(selector)
+				subjects, err := p.Evaluate(input)
 
 				if err != nil {
 					log.WithFields(log.Fields{
@@ -154,7 +162,7 @@ func (r *Runner) subjects(activityId string) ([]*provider.Subject, error) {
 	return nil, err
 }
 
-func (r *Runner) execute(name string, input *provider.JobInput) (*provider.JobResult, error) {
+func (r *Runner) execute(name string, input *provider.ExecuteInput) (*provider.ExecuteResult, error) {
 	p, err := r.provider(name)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -181,8 +189,8 @@ func (r *Runner) execute(name string, input *provider.JobInput) (*provider.JobRe
 	return result, nil
 }
 
-func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {
-	outputs := make(map[string]*provider.JobResult)
+func (r *Runner) Run(ctx context.Context) map[string]*provider.ExecuteResult {
+	outputs := make(map[string]*provider.ExecuteResult)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -213,9 +221,7 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {
 						// TODO: Propagate cancellation to GRPC plugins
 						log.WithField("plugin", pluginName).Info("execution cancelled")
 						mu.Lock()
-						outputs[pluginName] = &provider.JobResult{
-							Error: fmt.Errorf("execution cancelled").Error(),
-						}
+						outputs[pluginName] = &provider.ExecuteResult{}
 						mu.Unlock()
 						return
 					default:
@@ -224,20 +230,20 @@ func (r *Runner) Run(ctx context.Context) map[string]*provider.JobResult {
 							params[name] = value
 						}
 
-						input := provider.JobInput{
-							AssessmentId: r.spec.PlanId,
-							ActivityId:   activity.Id,
-							SubjectId:    subject.Id,
-							Parameters:   params,
+						// TODO: Add missing information to the input: ComponentId, ControlId, etc.
+						input := provider.ExecuteInput{
+							Plan: &provider.Plan{
+								Id:         r.spec.PlanId,
+								TaskId:     task.Id,
+								ActivityId: activity.Id,
+							},
 						}
 
 						output, err := r.execute(pluginName, &input)
 						mu.Lock()
 						if err != nil {
-							outputs[pluginName] = &provider.JobResult{
-								SubjectId: subject.Id,
-								Error:     err.Error(),
-							}
+							// TODO: Add error information
+							outputs[pluginName] = &provider.ExecuteResult{}
 							log.WithField("plugin", pluginName).Error(err)
 						} else {
 							outputs[pluginName] = output

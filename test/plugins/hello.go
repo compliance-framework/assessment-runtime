@@ -7,12 +7,12 @@ import (
 type Hello struct {
 }
 
-func (p *Hello) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
+func (p *Hello) Evaluate(*EvaluateInput) (*EvaluateResult, error) {
 	return nil, nil
 }
 
-func (p *Hello) Execute(_ *JobInput) (*JobResult, error) {
-	return &JobResult{}, nil
+func (p *Hello) Execute(input *ExecuteInput) (*ExecuteResult, error) {
+	return &ExecuteResult{}, nil
 }
 
 func main() {
