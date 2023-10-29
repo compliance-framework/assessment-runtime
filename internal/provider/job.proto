@@ -2,17 +2,27 @@ syntax = "proto3";
 
 package plugin;
 option go_package = "./provider";
+import "google/protobuf/timestamp.proto";
 
 message Property {
   string Name = 1;
   string Value = 2;
 }
 
+enum LogType {
+  INFO = 0;
+  ERROR = 1;
+  WARNING = 2;
+  DEBUG = 3;
+}
+
+// LogEntry holds the logging information
+// TODO: We should introduce any.proto to hold different types of values
 message LogEntry {
-  string Start = 1;
-  string End = 2;
-  string Title = 3;
-  string Description = 4;
+  string Id = 1;
+  google.protobuf.Timestamp Timestamp = 2;
+  LogType Type = 3;
+  string Details = 4;
 }
 
 message Expression {
@@ -21,7 +31,7 @@ message Expression {
   repeated string Values = 3;
 }
 
-message SubjectSelector {
+message Selector {
   string Query = 1;
   map<string, string> Labels = 2;
   repeated Expression Expressions = 3;
@@ -72,29 +82,64 @@ message Risk {
   int32 Score = 3;
 }
 
-message JobInput {
+message Plan {
   string Id = 1;
-  string RuntimeId = 2;
-  string AssessmentId = 3;
-  string ActivityId = 4;
-  Subject Subject = 5;
-  map<string, string> Parameters = 7;
+  string ComponentId = 2;
+  string ControlId = 3;
+  string TaskId = 4;
+  string ActivityId = 5;
 }
 
-message JobResult {
-  string Id = 1;
-  string RuntimeId = 2;
-  string AssessmentId = 3;
-  string ActivityId = 4;
-  string SubjectId = 5;
-  repeated Observation Observations = 6;
-  repeated Risk Risks = 7;
-  repeated LogEntry Logs = 8;
-  string Error = 9;
-  string State = 10;
+/**
+ * EvaluateInput holds the information about the assessment plan
+ * and the selector to use to find the subjects to assess.
+ */
+message EvaluateInput {
+  Plan Plan = 1;
+  Selector Selector = 2;
+
+  // Configuration is a map of configuration values that are passed to the provider
+  // It is similar to the `provider.configuration` section in the yaml file
+  map<string, string> Configuration = 3;
+}
+
+message EvaluateResult {
+  repeated Subject Subjects = 1;
+  repeated LogEntry Logs = 2;
+
+  // It's a temporary storage that the provider developer can use to pass information between
+  // the Evaluate and Execute methods.
+  // The information here is passed to the Props field of the ExecuteInput message.
+  map<string, string> Props = 3;
+}
+
+/**
+ * ExecuteInput is the input to a job.
+ */
+message ExecuteInput {
+  Plan Plan = 1;
+  Subject Subject = 2;
+  map<string, string> Props = 3;
+  map<string, string> Configuration = 4;
+}
+
+enum ExecutionStatus {
+  SUCCESS = 0;
+  FAILURE = 1;
+}
+
+/**
+ * ExecuteResult is the result of an assessment check
+ * We don't use the Plan information here as it can be provided by the runtime
+ */
+message ExecuteResult {
+  ExecutionStatus Status = 2;
+  repeated Observation Observations = 3;
+  repeated Risk Risks = 4;
+  repeated LogEntry Logs = 5;
 }
 
 service JobService {
-  rpc EvaluateSelector (SubjectSelector) returns (SubjectList);
-  rpc Execute (JobInput) returns (JobResult);
+  rpc Evaluate (EvaluateInput) returns (EvaluateResult);
+  rpc Execute (ExecuteInput) returns (ExecuteResult);
 }

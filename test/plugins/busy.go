@@ -9,22 +9,19 @@ type BusyPlugin struct {
 	message string
 }
 
-func (p *BusyPlugin) EvaluateSelector(_ *SubjectSelector) (*SubjectList, error) {
+func (p *BusyPlugin) Evaluate(*EvaluateInput) (*EvaluateResult, error) {
 	subjects := make([]*Subject, 0)
 	for i := 0; i < 3; i++ {
 		subjects = append(subjects, &Subject{Id: strconv.Itoa(i)})
 	}
-	list := &SubjectList{
+
+	return &EvaluateResult{
 		Subjects: subjects,
-	}
-	return list, nil
+	}, nil
 }
 
-func (p *BusyPlugin) Execute(in *JobInput) (*JobResult, error) {
-	observations := make([]*Observation, 0)
-
+func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 	obs := &Observation{
-		SubjectId:   in.SubjectId,
 		Title:       "Unencrypted Data Transmission",
 		Description: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
 		Collected:   "2022-01-01T00:00:00Z",
@@ -54,8 +51,9 @@ func (p *BusyPlugin) Execute(in *JobInput) (*JobResult, error) {
 		Uuid:    "123e4567-e89b-12d3-a456-426614174000",
 	}
 
-	return &JobResult{
-		Observations: append(observations, obs),
+	return &ExecuteResult{
+		Status:       ExecutionStatus_SUCCESS,
+		Observations: []*Observation{obs},
 	}, nil
 }
 
