@@ -2,69 +2,77 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"time"
+
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
-	"github.com/google/uuid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"time"
 )
 
 type K8sSvcPlugin struct {
 	message string
 }
 
-func (p *K8sSvcPlugin) EvaluateSelector(ss *SubjectSelector) (*SubjectList, error) {
+func (p *K8sSvcPlugin) Evaluate(ei *EvaluateInput) (*EvaluateResult, error) {
 	subjects := make([]*Subject, 0)
-	clientset, err := prepareClient(ss.Labels["host"], ss.Labels["token"])
+	clientset, err := prepareClient(ei.Selector.Labels["host"], ei.Selector.Labels["token"])
 	if err != nil {
 		return nil, err
 	}
 	d := time.Now().Add(time.Second * 10)
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
-	services, err := clientset.CoreV1().Services(ss.Labels["namespace"]).List(ctx, metav1.ListOptions{})
+	services, err := clientset.CoreV1().Services(ei.Selector.Labels["namespace"]).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	for _, svc := range services.Items {
 		subjects = append(subjects, &Subject{Id: svc.Name})
 	}
-	list := &SubjectList{
+	er := &EvaluateResult{
 		Subjects: subjects,
 	}
-	return list, nil
+	return er, nil
 }
 
-func (p *K8sSvcPlugin) Execute(in *JobInput) (*JobResult, error) {
-	clientset, err := prepareClient(in.Parameters["host"], in.Parameters["token"])
+func (p *K8sSvcPlugin) Execute(in *ExecuteInput) (*ExecuteResult, error) {
+	clientset, err := prepareClient(in.Props["host"], in.Props["token"])
 	if err != nil {
 		return nil, err
 	}
 	d := time.Now().Add(time.Second * 10)
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
-	service, err := clientset.CoreV1().Services(in.Parameters["namespace"]).Get(ctx, in.Id, metav1.GetOptions{})
+	service, err := clientset.CoreV1().Services(in.Props["namespace"]).Get(ctx, in.Subject.Id, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	found := false
+	logEntries := make([]*LogEntry, 0)
 	for _, port := range service.Spec.Ports {
+		le := &LogEntry{
+				Timestamp: time.Now().Format("2006-02-01T15:04:05Z"),
+				Type:      LogType_DEBUG,
+				Details:   fmt.Sprintf("Service %s exposes port %d", service.Name, port.Port),
+			}
+		logEntries = append(logEntries, le)
 		if port.Port == 80 {
 			found = true
 			break
 		}
 	}
-	jr := &JobResult{}
+	er := &ExecuteResult{}
 
 	if !found {
-		jr.State = "Pass"
+		er.Status = ExecutionStatus_SUCCESS
 	} else {
-		jr.State = "Fail"
+		er.Status = ExecutionStatus_FAILURE
 		observations := make([]*Observation, 0)
 
 		obs := &Observation{
-			SubjectId:   in.SubjectId,
+			SubjectId:   in.Subject.Id,
 			Title:       "Service exposes port 80",
 			Description: "The automated assessment tool detected that the the service exposes the default port 80.",
 			Collected:   time.Now().Format("2006-02-01T15:04:05Z"),
@@ -91,12 +99,11 @@ func (p *K8sSvcPlugin) Execute(in *JobInput) (*JobResult, error) {
 				},
 			},
 			Remarks: "Immediate action required to mitigate potential data breaches.",
-			Uuid:    uuid.New().String(),
 		}
-		jr.Observations = append(observations, obs)
+		er.Observations = append(observations, obs)
 	}
-
-	return jr, nil
+	er.Logs = logEntries
+	return er, nil
 }
 
 func main() {
