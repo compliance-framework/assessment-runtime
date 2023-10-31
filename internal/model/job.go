@@ -56,33 +56,8 @@ type Provider struct {
 	Configuration map[string]string `json:"configuration" yaml:"configuration"`
 }
 
-type Pair struct {
-	Name  string `json:"name" yaml:"name"`
-	Value string `json:"value" yaml:"value"`
-}
-
 type Expression struct {
 	Key      string   `json:"key" yaml:"key"`
 	Operator string   `json:"operator" yaml:"operator"`
 	Values   []string `json:"values" yaml:"values"`
-}
-
-type Observation struct {
-	SubjectId string `json:"subject-id" yaml:"subject-id"`
-	Remarks   string `json:"description" yaml:"description"` // Holds the observation text (couldn't find a better name)
-}
-
-type Risk struct {
-	SubjectId string `json:"subject-id" yaml:"subject-id"`
-	Remarks   string `json:"description" yaml:"description"` // Holds the risk text
-	Impact    string `json:"impact" yaml:"impact"`           // Holds the impact text
-}
-
-type JobResult struct {
-	Id           string         `json:"id" yaml:"id"`
-	RuntimeId    string         `json:"runtime-id" yaml:"runtime-id"` // only if the control-plane doesn't listen to runtime specific topic
-	AssessmentId string         `json:"assessment-id" yaml:"assessment-id"`
-	ActivityId   string         `json:"activity-id" yaml:"activity-id"`
-	Observations []*Observation `json:"observations" yaml:"observations"`
-	Risks        []*Risk        `json:"risks" yaml:"risks"`
 }
