@@ -4,23 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"time"
 
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	"github.com/google/uuid"
 )
 
 type AzureCliProvider struct {
 	message string
 }
 
-type VM struct {
-	Name string            `json:"name"`
-	Tags map[string]string `json:"tags"`
-}
+// type VirtualMachine struct {
+// 	ID   string `json:"id"`
+// 	Name string `json:"name"`
+// 	VmID string `json:"vmId"`
+// }
 
 func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, error) {
 
 	// Extract Azure Subscription ID from the parameters
-	subscriptionId, ok := input.Selector.Labels["subscriptionId"]
+	subscriptionId, ok := input.Configuration["subscriptionId"]
 	if !ok {
 		return nil, fmt.Errorf("subscriptionId parameter is missing")
 	}
@@ -29,13 +32,13 @@ func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, erro
 	cmd := exec.Command("az", "vm", "list", "--subscription", subscriptionId, "--query", "[].id", "--output", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute Azure CLI command: %s", err)
+		return nil, fmt.Errorf("List VMs: failed to execute Azure CLI command: %s", err)
 	}
 
-	// Parse the output into a slice of VM IDs
+	// Parse the output into a slice of VirtualMachine structs
 	var vmIds []string
 	if err := json.Unmarshal(out, &vmIds); err != nil {
-		return nil, fmt.Errorf("failed to parse Azure CLI command output: %s", err)
+		return nil, fmt.Errorf("Parse VmIds: failed to parse Azure CLI command output: %s", err)
 	}
 
 	// Create a list of subjects based on the VM IDs
@@ -61,62 +64,76 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	// Retrieve the VM ID from the subject properties
 	vmId, ok := input.Subject.Props["id"]
 	if !ok {
-		return nil, fmt.Errorf("VM ID is missing in subject properties")
+		return nil, fmt.Errorf("Vm Id is missing in subject properties")
 	}
 
 	// Construct the Azure CLI command to retrieve the tags of the specific VM
 	cmd := exec.Command("az", "vm", "show", "--ids", vmId, "--query", "tags", "--output", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute Azure CLI command: %s", err)
+		return nil, fmt.Errorf("Find Vm Tags: failed to execute Azure CLI command: %s", err)
 	}
 
 	// Parse the output into a map of tags
 	var tags map[string]string
-	if err := json.Unmarshal(out, &tags); err != nil {
-		return nil, fmt.Errorf("failed to parse Azure CLI command output: %s", err)
+	// If there are no tags on any Vms, not parse the output
+	if len(out) == 0 {
+		fmt.Println("Parse Vm Tags: No tags found")
+	} else {
+		if err := json.Unmarshal(out, &tags); err != nil {
+			return nil, fmt.Errorf("Parse Vm Tags: failed to parse Azure CLI command output: %s", err)
+		}
 	}
 
+	// Initialize variables to store the results
+	var obs *Observation
 	// Check if the "dataclassification" tag exists
 	_, hasTag := tags["dataclassification"]
 	if !hasTag {
+
 		// Create an observation if the tag is missing
-		obs := &Observation{
-			Id:          "123e4567-e89b-12d3-a456-426614174000",
+		obs = &Observation{
+			Id:          uuid.New().String(),
 			Title:       "Missing Data Classification Tag",
 			Description: "The virtual machine does not have a 'dataclassification' tag.",
-			Collected:   "2023-01-01T00:00:00Z",
-			Expires:     "2023-12-31T23:59:59Z",
+			Collected:   time.Now().Format(time.RFC3339),
+			Expires:     time.Now().AddDate(0, 1, 0).Format(time.RFC3339), // Add one month for the expiration
 			Links:       []*Link{},
 			Props: []*Property{
+				{
+					Name:  "Risk Level",
+					Value: "High",
+				},
+				{
+					Name:  "VmId",
+					Value: vmId,
+				},
 				{
 					Name:  "Recommendation",
 					Value: "Add a 'dataclassification' tag to this virtual machine.",
 				},
 			},
+			RelevantEvidence: []*Evidence{
+				{
+					Description: "az cli command did not find any 'dataclassification' tag for this Vm.",
+				},
+			},
 			Remarks: "The 'dataclassification' tag is required for compliance.",
 		}
-
-		// Log the observation
-		logs := []*LogEntry{
-			{
-				Timestamp: "2023-01-01T00:00:00Z",
-				Type:      LogType_WARNING,
-				Details:   "The virtual machine does not have a 'dataclassification' tag.",
-			},
-		}
-
-		// Return the result
-		return &ExecuteResult{
-			Status:       ExecutionStatus_SUCCESS,
-			Observations: []*Observation{obs},
-			Logs:         logs,
-		}, nil
 	}
 
-	// If the "dataclassification" tag exists, return a successful result without observations
+	// Log that the check has successfully run
+	logEntry := &LogEntry{
+		Timestamp: time.Now().Format(time.RFC3339),
+		Type:      LogType_INFO,
+		Details:   fmt.Sprintf("Dataclassification check on VM with ID %s has run successfully", vmId),
+	}
+
+	// Return the result
 	return &ExecuteResult{
-		Status: ExecutionStatus_SUCCESS,
+		Status:       ExecutionStatus_SUCCESS,
+		Observations: []*Observation{obs},
+		Logs:         []*LogEntry{logEntry},
 	}, nil
 }
 
