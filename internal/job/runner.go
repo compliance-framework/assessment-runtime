@@ -162,6 +162,7 @@ func (r *Runner) evaluate(activityId string) (*provider.EvaluateResult, error) {
 						Expressions: expressions,
 						Ids:         activity.Selector.Ids,
 					},
+					Configuration: activity.Provider.Configuration,
 				}
 				result, err := p.Evaluate(input)
 
