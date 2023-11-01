@@ -49,7 +49,7 @@ build-plugin:  ## Build plugins and copy the configuration
 	rm -rf bin
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
-	mkdir -p bin/plugins/azurecli/1.0.0
+	mkdir -p bin/plugins/azurecli/1.0.0 
 	mkdir -p bin/assessments
 	cp ./test/config/local/config.yml ./bin/config.yml
 	cp ./test/config/64d4b984-14c5-4135-88d0-f3ef0b7b82ac.yaml ./bin/assessments/
