@@ -34,6 +34,9 @@ func (p *K8sSvcPlugin) Evaluate(ei *EvaluateInput) (*EvaluateResult, error) {
 	er := &EvaluateResult{
 		Subjects: subjects,
 	}
+	er.Props = make(map[string]string)
+	er.Props["host"] = ei.Selector.Labels["host"]
+	er.Props["token"] = ei.Selector.Labels["token"]
 	return er, nil
 }
 
