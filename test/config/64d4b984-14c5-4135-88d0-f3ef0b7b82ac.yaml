@@ -18,5 +18,9 @@ tasks:
           version: "1.0.0"
           configuration:
             "subscriptionId": "d84e5f2b-e68c-462a-9ac9-856b0103555f"
-
-
+      - id: "0fb15295-b856-4d0d-9043-4c8fabaa52be"
+        title: "Check if the components are busy"
+        provider:
+          name: "busy"
+          package: "busy"
+          version: "1.0.0"
