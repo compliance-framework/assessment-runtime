@@ -1,29 +1,22 @@
 id: "64d4b984-14c5-4135-88d0-f3ef0b7b82ac"
 assessment-plan-id: "c758890a-e6e8-4e7f-88fd-9a2e5ea26d86"
 task-id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bd22"
-title: "Sample Assessment on Kubernetes"
+title: "Sample Assessment on Azure"
 tasks:
   - id: "6b9f56e0-8ae9-45d0-9fdd-3db4e8a5bd22"
-    title: "Port Checks"
+    title: "Check if VMs have dataclassification tags"
     schedule: "0 * * * * *"
     activities:
       - id: "0fb15295-b856-4d0d-9043-4c8fabda52be"
-        title: "Port Check"
+        title: "Check Dataclassification tag"
         params:
           parameter-1: "this-is-a-parameter-value"
         selector:
-          labels:
-            ns: "default"
         provider:
-          name: "busy"
-          package: "busy"
+          name: "azurecli"
+          package: "azurecli"
           version: "1.0.0"
           configuration:
-            "port": "8080"
-            "protocol": "tcp"
-            "timeout": "5"
-            "retries": "3"
-            "delay": "1"
-            "interval": "1"
+            "subscriptionId": "d84e5f2b-e68c-462a-9ac9-856b0103555f"
 
 
