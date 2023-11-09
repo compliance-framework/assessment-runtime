@@ -42,14 +42,18 @@ build-images:  ## Build Docker images
 
 run-docker:  ## Run the test environment using Docker Compose
 	@echo "Running Docker Compose..."
-	docker-compose -p argus -f ./test/docker-compose.yml up --build -d
+	docker compose -p argus -f ./test/docker-compose.yml up --build -d
+
+stop-docker:  ## Stop the test environment
+	@echo "Stopping Docker Compose..."
+	docker compose -p argus -f ./test/docker-compose.yml down
 
 build-plugin:  ## Build plugins and copy the configuration
 	@echo "Preparing local environment..."
 	rm -rf bin
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
-	mkdir -p bin/plugins/azurecli/1.0.0 
+	mkdir -p bin/plugins/azurecli/1.0.0
 	mkdir -p bin/assessments
 	cp ./test/config/local/config.yml ./bin/config.yml
 	cp ./test/config/64d4b984-14c5-4135-88d0-f3ef0b7b82ac.yaml ./bin/assessments/
