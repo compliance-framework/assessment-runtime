@@ -88,7 +88,7 @@ func (cm *ConfigurationManager) Listen() {
 			select {
 			case planEvent := <-ch:
 				log.Infof("received job configuration change: %s", planEvent.Type)
-				if planEvent.Type == "created" || planEvent.Type == "updated" {
+				if planEvent.Type == "activated" || planEvent.Type == "updated" {
 					err := cm.writeJobSpec(planEvent.Data)
 					if err != nil {
 						log.Errorf("failed to write job config: %s for job: %s", err, planEvent.Data.Id)

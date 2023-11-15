@@ -46,13 +46,13 @@ run-docker:  ## Run the test environment using Docker Compose
 
 build-plugin:  ## Build plugins and copy the configuration
 	@echo "Preparing local environment..."
-	rm -rf bin
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
-	mkdir -p bin/plugins/azurecli/1.0.0 
+	mkdir -p bin/plugins/azurecli/1.0.0
 	mkdir -p bin/assessments
 	cp ./test/config/local/config.yml ./bin/config.yml
-	cp ./test/config/64d4b984-14c5-4135-88d0-f3ef0b7b82ac.yaml ./bin/assessments/
+	find ./test/config/assessments/ -name '*.yaml' -exec cp {} ./bin/assessments/ \;
+	rsync ./test/config/assessments/ ./bin/assessments
 	@echo "Building plugins..."
 	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./test/plugins/busy.go
 	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./test/plugins/hello.go

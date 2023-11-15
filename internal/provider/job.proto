@@ -8,19 +8,26 @@ message Property {
   string Value = 2;
 }
 
-enum LogType {
-  INFO = 0;
-  ERROR = 1;
-  WARNING = 2;
-  DEBUG = 3;
+message Link {
+  string Href = 1;
+  string MediaType = 2;
+  string Rel = 3;
+  string ResourceFragment = 4;
+  string Text = 5;
 }
 
-// LogEntry holds the logging information
-// TODO: We should introduce any.proto to hold different types of values
+// LogEntry represents a record in an assessment log that documents a specific
+// event or action during the assessment. A log entry can contain various
+// information, including observations or findings, but it's essentially a
+// chronological record.
 message LogEntry {
-  string Timestamp = 1;
-  LogType Type = 2;
-  string Details = 3;
+  string Title = 1;
+  string Description = 2;
+  string Start = 3;
+  string End = 4;
+  string Remarks = 5;
+  repeated Property Props = 6;
+  repeated Link Links = 7;
 }
 
 message Expression {
@@ -58,14 +65,6 @@ message SubjectList {
   repeated Subject Subjects = 1;
 }
 
-message Link {
-  string Href = 1;
-  string MediaType = 2;
-  string Rel = 3;
-  string ResourceFragment = 4;
-  string Text = 5;
-}
-
 message Evidence {
   string Description = 1;
   string Href = 2;
@@ -74,23 +73,38 @@ message Evidence {
   string Remarks = 5;
 }
 
+message Finding {
+  string Id = 1;
+  string Title = 2;
+  string Description = 3;
+  string Remarks = 4;
+  repeated Property Props = 5;
+  repeated Link Links = 6;
+  string SubjectId = 7;
+  repeated string RelatedObservations = 8;
+  repeated string RelatedRisks = 9;
+}
+
 message Observation {
   string Id = 1;
-  string SubjectId = 2;
-  string Collected = 3;
   string Title = 4;
   string Description = 5;
-  string Expires = 6;
-  string Remarks = 7;
-  repeated Link Links = 8;
   repeated Property Props = 9;
+  repeated Link Links = 8;
+  string Remarks = 7;
+  string SubjectId = 2;
+  string Collected = 3;
+  string Expires = 6;
   repeated Evidence RelevantEvidence = 10;
 }
 
 message Risk {
-  string SubjectId = 1;
-  string Description = 2;
-  int32 Score = 3;
+  string Title = 1;
+  string SubjectId = 2;
+  string Description = 3;
+  string Statement = 4;
+  repeated Property Props = 9;
+  repeated Link Links = 8;
 }
 
 message Plan {
@@ -118,7 +132,7 @@ message EvaluateResult {
   repeated Subject Subjects = 1;
   repeated LogEntry Logs = 2;
 
-  // It's a temporary storage that the provider developer can use to pass information between
+  // Props is a temporary storage that the provider developer can use to pass information between
   // the Evaluate and Execute methods.
   // The information here is passed to the Props field of the ExecuteInput message.
   map<string, string> Props = 3;
@@ -147,8 +161,9 @@ enum ExecutionStatus {
  * We don't use the Plan information here as it can be provided by the runtime
  */
 message ExecuteResult {
-  ExecutionStatus Status = 2;
-  repeated Observation Observations = 3;
+  ExecutionStatus Status = 1;
+  repeated Observation Observations = 2;
+  repeated Finding Findings = 3;
   repeated Risk Risks = 4;
   repeated LogEntry Logs = 5;
 }

@@ -14,19 +14,6 @@ import (
 	"sync"
 )
 
-// RunnerResult represents the result of a runner execution.
-// We need another result type because the provider.ExecuteResult
-// doesn't hold information about the assessment plan, component, control, etc.
-type RunnerResult struct {
-	AssessmentId string                  `json:"assessment-id"`
-	ComponentId  string                  `json:"component-id"`
-	ControlId    string                  `json:"control-id"`
-	TaskId       string                  `json:"task-id"`
-	ActivityId   string                  `json:"activity-id"`
-	Error        error                   `json:"error"`
-	Results      *provider.ExecuteResult `json:"results"`
-}
-
 type Runner struct {
 	spec    model.JobSpec
 	clients map[string]*goplugin.Client
@@ -211,8 +198,8 @@ func (r *Runner) execute(name string, input *provider.ExecuteInput) (*provider.E
 	return result, nil
 }
 
-func (r *Runner) Run(ctx context.Context) []RunnerResult {
-	outputs := make([]RunnerResult, 0)
+func (r *Runner) Run(ctx context.Context) []Result {
+	outputs := make([]Result, 0)
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -256,7 +243,7 @@ func (r *Runner) Run(ctx context.Context) []RunnerResult {
 						// TODO: Propagate cancellation to GRPC plugins
 						log.WithField("plugin", pluginName).Info("execution cancelled")
 						mu.Lock()
-						outputs = append(outputs, RunnerResult{
+						outputs = append(outputs, Result{
 							Error: errors.New("execution cancelled"),
 						})
 						mu.Unlock()
@@ -277,18 +264,18 @@ func (r *Runner) Run(ctx context.Context) []RunnerResult {
 						output, err := r.execute(pluginName, &input)
 						mu.Lock()
 						if err != nil {
-							outputs = append(outputs, RunnerResult{
+							outputs = append(outputs, Result{
 								Error: err,
 							})
 							log.WithField("plugin", pluginName).Error(err)
 						} else {
-							outputs = append(outputs, RunnerResult{
-								AssessmentId: r.spec.PlanId,
-								ComponentId:  r.spec.ComponentId,
-								ControlId:    r.spec.ControlId,
-								TaskId:       task.Id,
-								ActivityId:   activity.Id,
-								Results:      output,
+							outputs = append(outputs, Result{
+								AssessmentId:  r.spec.PlanId,
+								ComponentId:   r.spec.ComponentId,
+								ControlId:     r.spec.ControlId,
+								TaskId:        task.Id,
+								ActivityId:    activity.Id,
+								ExecuteResult: output,
 							})
 						}
 						mu.Unlock()

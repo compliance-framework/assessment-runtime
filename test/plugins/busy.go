@@ -70,9 +70,7 @@ func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 
 	logs := []*LogEntry{
 		{
-			Timestamp: "2022-01-01T00:00:00Z",
-			Type:      LogType_DEBUG,
-			Details:   "The automated assessment tool detected that the application transmits sensitive data without encryption.",
+			Details: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
 		},
 	}
 
