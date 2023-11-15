@@ -270,12 +270,16 @@ func (r *Runner) Run(ctx context.Context) []Result {
 							log.WithField("plugin", pluginName).Error(err)
 						} else {
 							outputs = append(outputs, Result{
-								AssessmentId:  r.spec.PlanId,
-								ComponentId:   r.spec.ComponentId,
-								ControlId:     r.spec.ControlId,
-								TaskId:        task.Id,
-								ActivityId:    activity.Id,
-								ExecuteResult: output,
+								Status:       output.Status,
+								AssessmentId: r.spec.PlanId,
+								ComponentId:  r.spec.ComponentId,
+								ControlId:    r.spec.ControlId,
+								TaskId:       task.Id,
+								ActivityId:   activity.Id,
+								Observations: output.Observations,
+								Findings:     output.Findings,
+								Risks:        output.Risks,
+								Logs:         output.Logs,
 							})
 						}
 						mu.Unlock()
