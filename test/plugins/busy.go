@@ -70,7 +70,8 @@ func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 
 	logs := []*LogEntry{
 		{
-			Details: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
+			Title:       "Sensitive Data Transmission",
+			Description: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
 		},
 	}
 

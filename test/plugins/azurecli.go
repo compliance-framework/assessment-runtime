@@ -124,9 +124,8 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 
 	// Log that the check has successfully run
 	logEntry := &LogEntry{
-		Timestamp: time.Now().Format(time.RFC3339),
-		Type:      LogType_INFO,
-		Details:   fmt.Sprintf("Dataclassification check on VM with ID %s has run successfully", vmId),
+		Title:       "Data classification check",
+		Description: fmt.Sprintf("Dataclassification check on VM with ID %s has run successfully", vmId),
 	}
 
 	// Return the result
