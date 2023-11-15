@@ -66,10 +66,10 @@ message SubjectList {
 }
 
 message Evidence {
-  string Description = 1;
-  string Href = 2;
-  repeated Link Links = 3;
-  repeated Property Props = 4;
+  string Href = 1;
+  string Description = 2;
+  repeated Property Props = 3;
+  repeated Link Links = 4;
   string Remarks = 5;
 }
 

@@ -205,10 +205,11 @@ func (r *Runner) Run(ctx context.Context) []Result {
 	var mu sync.Mutex
 
 	for _, task := range r.spec.Tasks {
+
 		for _, activity := range task.Activities {
 
 			// Get evaluate for the activity
-			result, err := r.evaluate(activity.Id)
+			evaluateResult, err := r.evaluate(activity.Id)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"assessment-plan-id": r.spec.PlanId,
@@ -219,17 +220,17 @@ func (r *Runner) Run(ctx context.Context) []Result {
 				continue
 			}
 
-			if len(result.Subjects) == 0 {
+			if len(evaluateResult.Subjects) == 0 {
 				log.WithFields(log.Fields{
 					"assessment-plan-id": r.spec.PlanId,
 					"task":               task.Id,
 					"activity":           activity.Id,
 					"error":              err,
-				}).Warn("no evaluate found")
+				}).Warn("no subjects found")
 				continue
 			}
 
-			for _, subject := range result.Subjects {
+			for _, subject := range evaluateResult.Subjects {
 				wg.Add(1)
 
 				go func(subject *provider.Subject, activity model.Activity) {
@@ -238,55 +239,53 @@ func (r *Runner) Run(ctx context.Context) []Result {
 					pluginConfig := activity.Provider
 					pluginName := pluginConfig.Name
 
+					result := Result{
+						AssessmentId: r.spec.PlanId,
+						ComponentId:  r.spec.ComponentId,
+						ControlId:    r.spec.ControlId,
+						TaskId:       task.Id,
+						ActivityId:   activity.Id,
+						Subject:      subject,
+					}
+
 					select {
 					case <-ctx.Done():
 						// TODO: Propagate cancellation to GRPC plugins
 						log.WithField("plugin", pluginName).Info("execution cancelled")
-						mu.Lock()
-						outputs = append(outputs, Result{
-							Error: errors.New("execution cancelled"),
-						})
-						mu.Unlock()
+						result.Error = errors.New("execution cancelled")
 						return
 					default:
-						// TODO: Add missing information to the input: ComponentId, ControlId, etc.
 						input := provider.ExecuteInput{
 							Plan: &provider.Plan{
-								Id:         r.spec.PlanId,
-								TaskId:     task.Id,
-								ActivityId: activity.Id,
+								Id:          r.spec.PlanId,
+								ComponentId: r.spec.ComponentId,
+								ControlId:   r.spec.ControlId,
+								TaskId:      task.Id,
+								ActivityId:  activity.Id,
 							},
 							Subject:       subject,
-							Props:         result.Props,
+							Props:         evaluateResult.Props,
 							Configuration: pluginConfig.Configuration,
 						}
-
 						output, err := r.execute(pluginName, &input)
-						mu.Lock()
 						if err != nil {
-							outputs = append(outputs, Result{
-								Error: err,
-							})
+							result.Error = errors.New("execution cancelled")
 							log.WithField("plugin", pluginName).Error(err)
 						} else {
-							outputs = append(outputs, Result{
-								Status:       output.Status,
-								AssessmentId: r.spec.PlanId,
-								ComponentId:  r.spec.ComponentId,
-								ControlId:    r.spec.ControlId,
-								TaskId:       task.Id,
-								ActivityId:   activity.Id,
-								Observations: output.Observations,
-								Findings:     output.Findings,
-								Risks:        output.Risks,
-								Logs:         output.Logs,
-							})
+							result.Observations = output.Observations
+							result.Findings = output.Findings
+							result.Risks = output.Risks
+							result.Logs = output.Logs
+							result.Status = output.Status
 						}
-						mu.Unlock()
 					}
+					mu.Lock()
+					outputs = append(outputs, result)
+					mu.Unlock()
 				}(subject, activity)
 			}
 		}
+
 	}
 
 	wg.Wait()

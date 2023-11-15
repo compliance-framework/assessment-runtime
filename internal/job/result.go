@@ -11,6 +11,7 @@ type Result struct {
 	TaskId       string                   `json:"taskId"`
 	ActivityId   string                   `json:"activityId"`
 	Error        error                    `json:"error"`
+	Subject      *provider.Subject        `json:"subjects"`
 	Observations []*provider.Observation  `json:"observations"`
 	Findings     []*provider.Finding      `json:"findings"`
 	Risks        []*provider.Risk         `json:"risks"`
