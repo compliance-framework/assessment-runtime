@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
@@ -27,12 +29,30 @@ func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, erro
 	if !ok {
 		return nil, fmt.Errorf("subscriptionId parameter is missing")
 	}
-
-	// Construct the Azure CLI command to list all VM IDs in the subscription
-	cmd := exec.Command("az", "vm", "list", "--subscription", subscriptionId, "--query", "[].id", "--output", "json")
+	clientIdb, _ := os.ReadFile("/run/secrets/clientId")
+	clientSecretb, _ := os.ReadFile("/run/secrets/clientSecret")
+	tenantIdb, _ := os.ReadFile("/run/secrets/tenantId")
+	clientId := strings.Replace(string(clientIdb), "\n", "", -1)
+	clientSecret := strings.Replace(string(clientSecretb), "\n", "", -1)
+	tenantId := strings.Replace(string(tenantIdb), "\n", "", -1)
+	// Login to Azure CLI
+	cmd := exec.Command("az", "login", "--service-principal", "-u", clientId, "-p", clientSecret, "--tenant", tenantId)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("List VMs: failed to execute Azure CLI command: %s", err)
+		return nil, fmt.Errorf("List VMs: failed to login on Azure: %s\n\n%s", out, err)
+	}
+	// Setup Subscription
+	cmd = exec.Command("az", "account", "set", "-s", subscriptionId)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("List VMs: failed to login on Azure: %s\n\n%s", out, err)
+	}
+
+	// Construct the Azure CLI command to list all VM IDs in the subscription
+	cmd = exec.Command("az", "vm", "list", "--subscription", subscriptionId, "--query", "[].id", "--output", "json")
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("List VMs: failed to execute Azure CLI command: %s\n\n%s", out, err)
 	}
 
 	// Parse the output into a slice of VirtualMachine structs
