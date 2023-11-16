@@ -22,7 +22,7 @@ WORKDIR /app
 COPY --from=builder /runtime ./runtime
 
 COPY test/config/docker/config.yml .
-COPY test/config/assessments/64d4b984-14c5-4135-88d0-f3ef0b7b82ac.yaml ./assessments/
+COPY test/config/assessments/ ./assessments/
 
 # Run
 CMD ["./runtime"]
