@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	"os"
 	"strconv"
 )
 
@@ -69,6 +70,10 @@ func (p *BusyPlugin) Execute(*ExecuteInput) (*ExecuteResult, error) {
 	}
 
 	logs := []*LogEntry{
+		{
+			Title:       "Env test value",
+			Description: os.Getenv("TEST"),
+		},
 		{
 			Title:       "Sensitive Data Transmission",
 			Description: "The automated assessment tool detected that the application transmits sensitive data without encryption.",
