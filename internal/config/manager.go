@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/event"
 	"github.com/compliance-framework/assessment-runtime/internal/model"
+	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
 	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -28,6 +29,11 @@ type ConfigurationManager struct {
 	client   *resty.Client
 }
 
+var (
+	configPath     string
+	assessmentPath string
+)
+
 func getExecutableDir() (string, error) {
 	execPath, err := os.Executable()
 	if err != nil {
@@ -42,8 +48,8 @@ func NewConfigurationManager() (*ConfigurationManager, error) {
 		return nil, err
 	}
 
-	configPath := filepath.Join(execDir, "config.yml")
-	assessmentPath := filepath.Join(execDir, "assessments")
+	configPath = filepath.Join(execDir, "config.yml")
+	assessmentPath = filepath.Join(execDir, "assessments")
 
 	cm := &ConfigurationManager{
 		client: resty.New().SetRetryCount(0).SetRetryWaitTime(5 * time.Second).SetRetryMaxWaitTime(20 * time.Second),
@@ -92,7 +98,16 @@ func (cm *ConfigurationManager) Listen() {
 					err := cm.writeJobSpec(planEvent.Data)
 					if err != nil {
 						log.Errorf("failed to write job config: %s for job: %s", err, planEvent.Data.Id)
+						return
 					}
+					err = cm.loadJobSpecs(assessmentPath)
+					if err != nil {
+						log.Error("failed to load job specs")
+					}
+					pubsub.Publish(pubsub.Event{
+						Type: pubsub.ConfigurationUpdated,
+						Data: cm.jobSpecs,
+					})
 				} else if planEvent.Type == "delete" {
 					err := os.Remove(filepath.Join("assessments", planEvent.Data.Id+".yaml"))
 					if err != nil {
@@ -169,6 +184,8 @@ func (cm *ConfigurationManager) loadJobSpecs(path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read directory: %w", err)
 	}
+
+	cm.jobSpecs = make([]model.JobSpec, 0)
 
 	for _, file := range files {
 		fileExt := filepath.Ext(file.Name())

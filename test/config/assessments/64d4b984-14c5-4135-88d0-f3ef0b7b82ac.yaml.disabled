@@ -7,17 +7,17 @@ tasks:
     title: "Check if VMs have dataclassification tags"
     schedule: "0 * * * * *"
     activities:
-      - id: "0fb15295-b856-4d0d-9043-4c8fabda52be"
-        title: "Check Dataclassification tag"
-        params:
-          parameter-1: "this-is-a-parameter-value"
-        selector:
-        provider:
-          name: "azurecli"
-          package: "azurecli"
-          version: "1.0.0"
-          configuration:
-            "subscriptionId": "d84e5f2b-e68c-462a-9ac9-856b0103555f"
+#      - id: "0fb15295-b856-4d0d-9043-4c8fabda52be"
+#        title: "Check Dataclassification tag"
+#        params:
+#          parameter-1: "this-is-a-parameter-value"
+#        selector:
+#        provider:
+#          name: "azurecli"
+#          package: "azurecli"
+#          version: "1.0.0"
+#          configuration:
+#            "subscriptionId": "d84e5f2b-e68c-462a-9ac9-856b0103555f"
       - id: "0fb15295-b856-4d0d-9043-4c8fabaa52be"
         title: "Check if the components are busy"
         provider:

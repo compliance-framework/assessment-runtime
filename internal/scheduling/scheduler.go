@@ -34,6 +34,35 @@ func NewScheduler(jobSpecs []model.JobSpec) *Scheduler {
 
 // Start starts the scheduler and runs the assessments based on the configured schedule.
 func (s *Scheduler) Start(ctx context.Context) {
+	s.loadJobs(ctx)
+
+	// Listen for configuration updates
+	ch, err := pubsub.Subscribe(pubsub.ConfigurationUpdated)
+	if err != nil {
+		fmt.Println("error subscribing to configuration updates:", err)
+		return
+	}
+
+	go func() {
+		for event := range ch {
+			fmt.Println("received event:", event)
+			s.cleanJobs()
+			s.specs = event.Data.([]model.JobSpec)
+			s.loadJobs(ctx)
+		}
+	}()
+
+	s.c.Start()
+}
+
+// Stop stops the scheduler and running assessments.
+func (s *Scheduler) Stop() {
+	s.c.Stop()
+
+	log.Info("Stopping scheduler")
+}
+
+func (s *Scheduler) loadJobs(ctx context.Context) {
 	for _, spec := range s.specs {
 		err := s.addJob(ctx, spec)
 		if err != nil {
@@ -46,16 +75,9 @@ func (s *Scheduler) Start(ctx context.Context) {
 			continue
 		}
 	}
-
-	s.c.Start()
 }
 
-// Stop stops the scheduler and running assessments.
-func (s *Scheduler) Stop() {
-	s.c.Stop()
-
-	log.Info("Stopping scheduler")
-
+func (s *Scheduler) cleanJobs() {
 	var wg sync.WaitGroup
 
 	s.runners.Range(func(key, value interface{}) bool {
