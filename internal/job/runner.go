@@ -63,10 +63,13 @@ func (r *Runner) loadProviders() error {
 			"packagePath": packagePath,
 		}).Info("Loading plugin package")
 
+		cmd := exec.Command(packagePath)
+		cmd.Env = os.Environ()
+
 		client := goplugin.NewClient(&goplugin.ClientConfig{
 			HandshakeConfig:  provider.HandshakeConfig,
 			Plugins:          pluginMap,
-			Cmd:              exec.Command(packagePath),
+			Cmd:              cmd,
 			AllowedProtocols: []goplugin.Protocol{goplugin.ProtocolGRPC},
 		})
 
