@@ -107,6 +107,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 
 	// Initialize variables to store the results
 	var obs *Observation
+	observations := []*Observation{}
 	// Check if the "dataclassification" tag exists
 	_, hasTag := tags["dataclassification"]
 	if !hasTag {
@@ -140,6 +141,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			},
 			Remarks: "The 'dataclassification' tag is required for compliance.",
 		}
+		observations = append(observations, obs)
 	}
 
 	// Log that the check has successfully run
@@ -151,7 +153,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	// Return the result
 	return &ExecuteResult{
 		Status:       ExecutionStatus_SUCCESS,
-		Observations: []*Observation{obs},
+		Observations: observations,
 		Logs:         []*LogEntry{logEntry},
 	}, nil
 }
