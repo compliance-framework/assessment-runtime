@@ -21,9 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /azurecli ./test/plugins/azurecli.go
 # Python so we can install azure cli
 FROM mcr.microsoft.com/azure-cli
 
-# Install Python
 WORKDIR /app
-
 
 COPY --from=builder /runtime ./runtime
 COPY --from=builder /busy ./plugins/busy/1.0.0/busy
