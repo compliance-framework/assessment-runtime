@@ -42,7 +42,11 @@ build-images:  ## Build Docker images
 
 run-docker:  ## Run the test environment using Docker Compose
 	@echo "Running Docker Compose..."
-	docker-compose -p argus -f ./test/docker-compose.yml up --build -d
+	docker compose -p argus -f ./test/docker-compose.yml up --build -d
+
+stop-docker:  ## Stop the test environment
+	@echo "Stopping Docker Compose..."
+	docker compose -p argus -f ./test/docker-compose.yml down
 
 build-plugin:  ## Build plugins and copy the configuration
 	@echo "Preparing local environment..."
