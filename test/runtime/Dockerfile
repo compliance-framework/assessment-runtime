@@ -19,14 +19,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /azurecli ./test/plugins/azurecli.go
 
 # Use a minimal base image to package the runtime binary
 # Python so we can install azure cli
-FROM python:alpine
+FROM mcr.microsoft.com/azure-cli
 
-# Install Python
 WORKDIR /app
-
-RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo make
-RUN pip install --upgrade pip
-RUN pip install azure-cli
 
 COPY --from=builder /runtime ./runtime
 COPY --from=builder /busy ./plugins/busy/1.0.0/busy
