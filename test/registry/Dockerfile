@@ -17,5 +17,4 @@ COPY --from=builder /app/hello /public/hello/1.0.0/hello
 
 RUN chmod 755 /public/busy/1.0.0/busy
 RUN chmod 755 /public/hello/1.0.0/hello
-ENV PORT=80
-EXPOSE $PORT
+
