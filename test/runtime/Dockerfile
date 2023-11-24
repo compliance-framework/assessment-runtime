@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /azurecli ./test/plugins/azurecli.go
 
 # Use a minimal base image to package the runtime binary
 # Python so we can install azure cli
-FROM mcr.microsoft.com/azure-cli
+FROM mcr.microsoft.com/azure-cli:latest
 
 WORKDIR /app
 
