@@ -1,4 +1,4 @@
-name: Publish
+name: Publish Plugin Registry
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
         with:
           context: .
           file: test/registry/Dockerfile
-          platforms: linux/amd64,linux/arm/v8
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
