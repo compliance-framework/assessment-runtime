@@ -35,12 +35,14 @@ func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, erro
 	clientId := strings.Replace(string(clientIdb), "\n", "", -1)
 	clientSecret := strings.Replace(string(clientSecretb), "\n", "", -1)
 	tenantId := strings.Replace(string(tenantIdb), "\n", "", -1)
+
 	// Login to Azure CLI
 	cmd := exec.Command("az", "login", "--service-principal", "-u", clientId, "-p", clientSecret, "--tenant", tenantId)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("List VMs: failed to login on Azure: %s\n\n%s", out, err)
 	}
+
 	// Setup Subscription
 	cmd = exec.Command("az", "account", "set", "-s", subscriptionId)
 	out, err = cmd.CombinedOutput()
