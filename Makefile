@@ -37,7 +37,7 @@ lint:  ## Lint the code
 
 build-images:  ## Build Docker images
 	@echo "Building Docker images..."
-	docker build -t plugin-registry ./test/registry
+	docker build -t plugin-registry -f ./test/registry/Dockerfile .
 	docker build -t assessment-runtime -f test/runtime/Dockerfile .
 
 run-docker:  ## Run the test environment using Docker Compose
