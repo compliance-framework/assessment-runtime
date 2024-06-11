@@ -115,7 +115,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 
 		obs = &Observation{
 			Id:          uuid.New().String(),
-			Title:       "Missing Dafmt.Sprintf(ta Classification Tag",
+			Title:       "Missing Data Classification Tag",
 			Description: fmt.Sprintf("The virtual machine %s does not have a 'dataclassification' tag.", vmId),
 			Collected:   time.Now().Format(time.RFC3339),
 			Expires:     time.Now().AddDate(0, 1, 0).Format(time.RFC3339), // Add one month for the expiration
