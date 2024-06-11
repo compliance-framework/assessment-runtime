@@ -109,9 +109,8 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	observations := []*Observation{}
 	// Check if the "dataclassification" tag exists
 	_, hasTag := tags["dataclassification"]
-	// Create an observation if the tag is missing or there.
+	// Create an observation if the tag is either missing, or there.
 	if !hasTag {
-
 		obs = &Observation{
 			Id:          uuid.New().String(),
 			Title:       "Missing Data Classification Tag",
@@ -151,8 +150,16 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			Links:       []*Link{},
 			Props: []*Property{
 				{
+					Name:  "Risk Level",
+					Value: "None",
+				},
+				{
 					Name:  "VmId",
 					Value: vmId,
+				},
+				{
+					Name:  "Recommendation",
+					Value: "None",
 				},
 			},
 			RelevantEvidence: []*Evidence{
@@ -162,12 +169,13 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			},
 			Remarks: "All OK.",
 		}
+		observations = append(observations, obs)
 	}
 
 	// Log that the check has successfully run
 	logEntry := &LogEntry{
 		Title:       "Data classification check",
-		Description: fmt.Sprintf("Dataclassification check on VM with ID %s has run successfully", vmId),
+		Description: "Data classification check has run successfully",
 	}
 
 	// Return the result
