@@ -35,8 +35,9 @@ lint:  ## Lint the code
 	@echo "Running lint..."
 	@golint ./...
 
-build-local:   ## Build image to be used locally
-	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local .
+build-local: build-plugin  ## Build image to be used locally
+	docker build -t ghcr.io/compliance-framework/plugin-registry:latest_local -f ./test/registry/Dockerfile .
+	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local -f ./test/runtime/Dockerfile .
 
 build-images:  ## Build Docker images
 	@echo "Building Docker images..."
