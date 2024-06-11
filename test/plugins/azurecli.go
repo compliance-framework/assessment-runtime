@@ -110,13 +110,13 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	observations := []*Observation{}
 	// Check if the "dataclassification" tag exists
 	_, hasTag := tags["dataclassification"]
+	// Create an observation if the tag is missing or there.
 	if !hasTag {
 
-		// Create an observation if the tag is missing
 		obs = &Observation{
 			Id:          uuid.New().String(),
-			Title:       "Missing Data Classification Tag",
-			Description: "The virtual machine does not have a 'dataclassification' tag.",
+			Title:       "Missing Dafmt.Sprintf(ta Classification Tag",
+			Description: fmt.Sprintf("The virtual machine %s does not have a 'dataclassification' tag.", vmId),
 			Collected:   time.Now().Format(time.RFC3339),
 			Expires:     time.Now().AddDate(0, 1, 0).Format(time.RFC3339), // Add one month for the expiration
 			Links:       []*Link{},
@@ -131,17 +131,38 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 				},
 				{
 					Name:  "Recommendation",
-					Value: "Add a 'dataclassification' tag to this virtual machine.",
+					Value: fmt.Sprintf("Add a 'dataclassification' tag to the virtual machine %s.", vmId),
 				},
 			},
 			RelevantEvidence: []*Evidence{
 				{
-					Description: "az cli command did not find any 'dataclassification' tag for this Vm.",
+					Description: fmt.Sprintf("az cli command did not find any 'dataclassification' tag for the vm %s",vmId),
 				},
 			},
 			Remarks: "The 'dataclassification' tag is required for compliance.",
 		}
 		observations = append(observations, obs)
+	} else {
+		obs = &Observation{
+			Id:          uuid.New().String(),
+			Title:       "Data Classification Tag Present",
+			Description: fmt.Sprintf("The virtual machine %s has a 'dataclassification' tag.", vmId),
+			Collected:   time.Now().Format(time.RFC3339),
+			Expires:     time.Now().AddDate(0, 1, 0).Format(time.RFC3339), // Add one month for the expiration
+			Links:       []*Link{},
+			Props: []*Property{
+				{
+					Name:  "VmId",
+					Value: vmId,
+				},
+			},
+			RelevantEvidence: []*Evidence{
+				{
+					Description: fmt.Sprintf("az cli command found a 'dataclassification' tag for the vm: %s", vmId),
+				},
+			},
+			Remarks: "All OK.",
+		}
 	}
 
 	// Log that the check has successfully run
