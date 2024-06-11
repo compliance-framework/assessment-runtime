@@ -252,35 +252,35 @@ func (r *Runner) Run(ctx context.Context) []Result {
 					}
 
 					select {
-					case <-ctx.Done():
-						// TODO: Propagate cancellation to GRPC plugins
-						log.WithField("plugin", pluginName).Info("execution cancelled")
-						result.Error = errors.New("execution cancelled")
-						return
-					default:
-						input := provider.ExecuteInput{
-							Plan: &provider.Plan{
-								Id:          r.spec.PlanId,
-								ComponentId: r.spec.ComponentId,
-								ControlId:   r.spec.ControlId,
-								TaskId:      task.Id,
-								ActivityId:  activity.Id,
-							},
-							Subject:       subject,
-							Props:         evaluateResult.Props,
-							Configuration: pluginConfig.Configuration,
-						}
-						output, err := r.execute(pluginName, &input)
-						if err != nil {
+						case <-ctx.Done():
+							// TODO: Propagate cancellation to GRPC plugins
+							log.WithField("plugin", pluginName).Info("execution cancelled")
 							result.Error = errors.New("execution cancelled")
-							log.WithField("plugin", pluginName).Error(err)
-						} else {
-							result.Observations = output.Observations
-							result.Findings = output.Findings
-							result.Risks = output.Risks
-							result.Logs = output.Logs
-							result.Status = output.Status
-						}
+							return
+						default:
+							input := provider.ExecuteInput{
+								Plan: &provider.Plan{
+									Id:          r.spec.PlanId,
+									ComponentId: r.spec.ComponentId,
+									ControlId:   r.spec.ControlId,
+									TaskId:      task.Id,
+									ActivityId:  activity.Id,
+								},
+								Subject:       subject,
+								Props:         evaluateResult.Props,
+								Configuration: pluginConfig.Configuration,
+							}
+							output, err := r.execute(pluginName, &input)
+							if err != nil {
+								result.Error = errors.New("execution cancelled")
+								log.WithField("plugin", pluginName).Error(err)
+							} else {
+								result.Observations = output.Observations
+								result.Findings = output.Findings
+								result.Risks = output.Risks
+								result.Logs = output.Logs
+								result.Status = output.Status
+							}
 					}
 					mu.Lock()
 					outputs = append(outputs, result)
