@@ -148,7 +148,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			Title:       "Data Classification Tag Present",
 			Description: fmt.Sprintf("The virtual machine %s has a 'dataclassification' tag.", vmId),
 			Collected:   time.Now().Format(time.RFC3339),
-			Expires:     time.Now().AddDate(0, 1, 0).Format(time.RFC3339), // Add one month for the expiration
+			Expires:     time.Now().Format(time.RFC3339),
 			Links:       []*Link{},
 			Props: []*Property{
 				{
