@@ -23,7 +23,6 @@ type AzureCliProvider struct {
 // }
 
 func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, error) {
-
 	// Extract Azure Subscription ID from the parameters
 	subscriptionId, ok := input.Configuration["subscriptionId"]
 	if !ok {
