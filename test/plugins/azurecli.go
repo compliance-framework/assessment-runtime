@@ -106,13 +106,17 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 
 	// Initialize variables to store the results
 	var obs *Observation
+	var fndngs *Finding
 	observations := []*Observation{}
+	findings := []*Finding{}
+
 	// Check if the "dataclassification" tag exists
 	_, hasTag := tags["dataclassification"]
 	// Create an observation if the tag is either missing, or there.
 	if !hasTag {
+		obs_id := uuid.New().String()
 		obs = &Observation{
-			Id:          uuid.New().String(),
+			Id:          obs_id,
 			Title:       "Missing Data Classification Tag",
 			Description: fmt.Sprintf("The virtual machine %s does not have a 'dataclassification' tag.", vmId),
 			Collected:   time.Now().Format(time.RFC3339),
@@ -139,7 +143,15 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			},
 			Remarks: "The 'dataclassification' tag is required for compliance.",
 		}
+		fndngs = &Finding{
+			Id:          uuid.New().String(),
+			Title:       "Missing Data Classification Tag",
+			Description: fmt.Sprintf("The virtual machine %s does not have a 'dataclassification' tag.", vmId),
+			Remarks:     fmt.Sprintf("Give the virtual machine %s a 'dataclassification' tag.", vmId),
+			RelatedObservations: []string{obs_id},
+		}
 		observations = append(observations, obs)
+		findings = append(findings, fndngs)
 	} else {
 		obs = &Observation{
 			Id:          uuid.New().String(),
@@ -150,16 +162,8 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 			Links:       []*Link{},
 			Props: []*Property{
 				{
-					Name:  "Risk Level",
-					Value: "None",
-				},
-				{
 					Name:  "VmId",
 					Value: vmId,
-				},
-				{
-					Name:  "Recommendation",
-					Value: "None",
 				},
 			},
 			RelevantEvidence: []*Evidence{
@@ -172,6 +176,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 		observations = append(observations, obs)
 	}
 
+
 	// Log that the check has successfully run
 	logEntry := &LogEntry{
 		Title:       "Data classification check",
@@ -182,6 +187,7 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	return &ExecuteResult{
 		Status:       ExecutionStatus_SUCCESS,
 		Observations: observations,
+		Findings:     findings,
 		Logs:         []*LogEntry{logEntry},
 	}, nil
 }
