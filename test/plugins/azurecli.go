@@ -82,6 +82,8 @@ func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, erro
 func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) {
 	// Retrieve the VM ID from the subject properties
 	vmId, ok := input.Subject.Props["id"]
+	start_time := time.Now().Format(time.RFC3339)
+
 	if !ok {
 		return nil, fmt.Errorf("Vm Id is missing in subject properties")
 	}
@@ -181,6 +183,8 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 	logEntry := &LogEntry{
 		Title:       "Data classification check",
 		Description: "Data classification check has run successfully",
+		Start:       start_time,
+		End:         time.Now().Format(time.RFC3339),
 	}
 
 	// Return the result
