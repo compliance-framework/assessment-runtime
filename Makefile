@@ -57,6 +57,7 @@ build-plugin:  ## Build plugins and copy the configuration
 	mkdir -p bin/plugins/busy/1.0.0
 	mkdir -p bin/plugins/hello/1.0.0
 	mkdir -p bin/plugins/azurecli/1.0.0
+	mkdir -p bin/plugins/ssh-command/1.0.0
 	mkdir -p bin/assessments
 	cp ./test/config/local/config.yml ./bin/config.yml
 	find ./test/config/assessments/ -name '*.yaml' -exec cp {} ./bin/assessments/ \;
@@ -65,9 +66,11 @@ build-plugin:  ## Build plugins and copy the configuration
 	@$(GO) build -o bin/plugins/busy/1.0.0/busy ./test/plugins/busy.go
 	@$(GO) build -o bin/plugins/hello/1.0.0/hello ./test/plugins/hello.go
 	@$(GO) build -o bin/plugins/azurecli/1.0.0/azurecli ./test/plugins/azurecli.go
+	@$(GO) build -o bin/plugins/ssh-command/1.0.0/ssh-command ./test/plugins/ssh-command.go
 	chmod +x bin/plugins/busy/1.0.0/busy
 	chmod +x bin/plugins/hello/1.0.0/hello
 	chmod +x bin/plugins/azurecli/1.0.0/azurecli
+	chmod +x bin/plugins/ssh-command/1.0.0/ssh-command
 
 run-local: build-plugin  ## Build and run the application locally
 	@echo "Building and running $(BINARY_NAME) locally..."
