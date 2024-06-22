@@ -90,6 +90,11 @@ func (s *Scheduler) cleanJobs() {
 		return true
 	})
 
+	// Clean up crontab as well, as we will re-add all entries again
+	for _, entry := range s.c.Entries() {
+		s.c.Remove(entry.ID)
+	}
+
 	wg.Wait()
 }
 
