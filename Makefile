@@ -39,6 +39,9 @@ build-local: build-plugin  ## Build image to be used locally
 	docker build -t ghcr.io/compliance-framework/plugin-registry:latest_local -f ./test/registry/Dockerfile .
 	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local -f ./test/runtime/Dockerfile .
 
+build-local-ar:  ## Build assessment-runtime
+	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local -f ./test/runtime/Dockerfile .
+
 build-images:  ## Build Docker images
 	@echo "Building Docker images..."
 	docker build -t plugin-registry -f ./test/registry/Dockerfile .
