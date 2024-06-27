@@ -1,64 +1,64 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"os/exec"
-	"strings"
 	"time"
+	"context"
+	"os"
+	"strings"
 
 	. "github.com/compliance-framework/assessment-runtime/internal/provider"
 	"github.com/google/uuid"
+    "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+    "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 )
 
 type AzureCliProvider struct {
 	message string
 }
 
-// type VirtualMachine struct {
-// 	ID   string `json:"id"`
-// 	Name string `json:"name"`
-// 	VmID string `json:"vmId"`
-// }
-
 func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, error) {
-	// Extract Azure Subscription ID from the parameters
+	var vmIds []string
+
+    // Get environment variables and configuration data (not sure why subId is not env variable)
+    clientId := os.Getenv("AZURE_CLIENT_ID")
+    clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
+    tenantId := os.Getenv("AZURE_TENANT_ID")
 	subscriptionId, ok := input.Configuration["subscriptionId"]
+
+    if clientId == "" || clientSecret == "" || tenantId == "" {
+		return nil, fmt.Errorf("One or more environment variables are not set")
+    }
 	if !ok {
 		return nil, fmt.Errorf("subscriptionId parameter is missing")
 	}
-	clientIdb, _ := os.ReadFile("/run/secrets/clientId")
-	clientSecretb, _ := os.ReadFile("/run/secrets/clientSecret")
-	tenantIdb, _ := os.ReadFile("/run/secrets/tenantId")
-	clientId := strings.Replace(string(clientIdb), "\n", "", -1)
-	clientSecret := strings.Replace(string(clientSecretb), "\n", "", -1)
-	tenantId := strings.Replace(string(tenantIdb), "\n", "", -1)
-	// Login to Azure CLI
-	cmd := exec.Command("az", "login", "--service-principal", "-u", clientId, "-p", clientSecret, "--tenant", tenantId)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("List VMs: failed to login on Azure: %s\n\n%s", out, err)
-	}
-	// Setup Subscription
-	cmd = exec.Command("az", "account", "set", "-s", subscriptionId)
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("List VMs: failed to login on Azure: %s\n\n%s", out, err)
-	}
 
-	// Construct the Azure CLI command to list all VM IDs in the subscription
-	cmd = exec.Command("az", "vm", "list", "--subscription", subscriptionId, "--query", "[].id", "--output", "json")
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("List VMs: failed to execute Azure CLI command: %s\n\n%s", out, err)
-	}
+    // Create a credential using Azure identity
+    cred, err := azidentity.NewDefaultAzureCredential(nil)
+    if err != nil {
+		return nil, fmt.Errorf("failed to obtain a credential: %v", err)
+    }
 
-	// Parse the output into a slice of VirtualMachine structs
-	var vmIds []string
-	if err := json.Unmarshal(out, &vmIds); err != nil {
-		return nil, fmt.Errorf("Parse VmIds: failed to parse Azure CLI command output: %s", err)
-	}
+    // Create a VM Client
+    vmClient, err := armcompute.NewVirtualMachinesClient(subscriptionId, cred, nil)
+    if err != nil {
+		return nil, fmt.Errorf("failed to create virtual machines client: %v", err)
+    }
+
+    // Create a context
+    ctx := context.Background()
+
+    // List all VMs in a subscription
+    pager := vmClient.NewListAllPager(nil)
+    for pager.More() {
+        page, err := pager.NextPage(ctx)
+        if err != nil {
+			return nil, fmt.Errorf("failed to get next page of VMs: %v", err)
+        }
+        for _, vm := range page.Value {
+			vmIds = append(vmIds, *vm.ID)
+        }
+    }
 
 	// Create a list of subjects based on the VM IDs
 	subjects := make([]*Subject, 0)
@@ -80,35 +80,63 @@ func (p *AzureCliProvider) Evaluate(input *EvaluateInput) (*EvaluateResult, erro
 }
 
 func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) {
+
+	var obs *Observation
+	var fndngs *Finding
+
+    // Get environment variables and config variable.
+    clientId := os.Getenv("AZURE_CLIENT_ID")
+    clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
+    tenantId := os.Getenv("AZURE_TENANT_ID")
+	subscriptionId, ok := input.Configuration["subscriptionId"]
+
+    if clientId == "" || clientSecret == "" || tenantId == "" {
+		return nil, fmt.Errorf("One or more environment variables are not set")
+    }
+
+	if !ok {
+		return nil, fmt.Errorf("subscriptionId parameter is missing")
+	}
+
+    // Create a context
+    ctx := context.Background()
+
+    // Create a credential using client ID, client secret, and tenant ID
+    cred, err := azidentity.NewClientSecretCredential(tenantId, clientId, clientSecret, nil)
+    if err != nil {
+		return nil, fmt.Errorf("failed to obtain a credential: %v", err)
+    }
+
+	// Create a VM client
+    vmClient, err := armcompute.NewVirtualMachinesClient(subscriptionId, cred, nil)
+    if err != nil {
+		return nil, fmt.Errorf("failed to create virtual machines client: %v", err)
+    }
+
+
 	// Retrieve the VM ID from the subject properties
 	vmId, ok := input.Subject.Props["id"]
-	start_time := time.Now().Format(time.RFC3339)
-
 	if !ok {
 		return nil, fmt.Errorf("Vm Id is missing in subject properties")
 	}
+	start_time := time.Now().Format(time.RFC3339)
 
-	// Construct the Azure CLI command to retrieve the tags of the specific VM
-	cmd := exec.Command("az", "vm", "show", "--ids", vmId, "--query", "tags", "--output", "json")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("Find Vm Tags: failed to execute Azure CLI command: %s", err)
-	}
+    // Extract resource group and VM name from VM ID
+    resourceGroup, vmName, err := extractResourceGroupAndVMName(vmId)
+    if err != nil {
+		return nil, fmt.Errorf("failed to extract resource group and VM name: %v", err)
+    }
 
-	// Parse the output into a map of tags
-	var tags map[string]string
-	// If there are no tags on any Vms, not parse the output
-	if len(out) == 0 {
-		fmt.Println("Parse Vm Tags: No tags found")
-	} else {
-		if err := json.Unmarshal(out, &tags); err != nil {
-			return nil, fmt.Errorf("Parse Vm Tags: failed to parse Azure CLI command output: %s", err)
-		}
-	}
+    // Get the VM
+    vm, err := vmClient.Get(ctx, resourceGroup, vmName, nil)
+    if err != nil {
+		return nil, fmt.Errorf("failed to get virtual machine: %v", err)
+    }
+
+    // Retrieve the tags
+    tags := vm.Tags
 
 	// Initialize variables to store the results
-	var obs *Observation
-	var fndngs *Finding
 	observations := []*Observation{}
 	findings := []*Finding{}
 
@@ -170,7 +198,6 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 		observations = append(observations, obs)
 	}
 
-
 	// Log that the check has successfully run
 	logEntry := &LogEntry{
 		Title:       "Data classification check",
@@ -186,6 +213,15 @@ func (p *AzureCliProvider) Execute(input *ExecuteInput) (*ExecuteResult, error) 
 		Findings:     findings,
 		Logs:         []*LogEntry{logEntry},
 	}, nil
+}
+
+// extractResourceGroupAndVMName extracts the resource group and VM name from the VM ID
+func extractResourceGroupAndVMName(vmID string) (string, string, error) {
+    parts := strings.Split(vmID, "/")
+    if len(parts) < 9 {
+        return "", "", fmt.Errorf("invalid VM ID format")
+    }
+    return parts[4], parts[8], nil
 }
 
 func main() {
