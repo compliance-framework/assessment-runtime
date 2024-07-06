@@ -7,7 +7,7 @@ import (
 
 	"time"
 
-	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	. "github.com/compliance-framework/assessment-runtime/provider"
 	"github.com/google/uuid"
 )
 

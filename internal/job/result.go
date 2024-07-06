@@ -1,6 +1,6 @@
 package job
 
-import "github.com/compliance-framework/assessment-runtime/internal/provider"
+import "github.com/compliance-framework/assessment-runtime/provider"
 
 // Result represents the result of a runner execution.
 type Result struct {

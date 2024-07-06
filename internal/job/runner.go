@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/model"
-	"github.com/compliance-framework/assessment-runtime/internal/provider"
+	"github.com/compliance-framework/assessment-runtime/provider"
 	goplugin "github.com/hashicorp/go-plugin"
 	log "github.com/sirupsen/logrus"
 	"os"

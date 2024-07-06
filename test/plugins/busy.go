@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	. "github.com/compliance-framework/assessment-runtime/provider"
 	"os"
 	"strconv"
 )

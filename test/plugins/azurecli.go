@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	. "github.com/compliance-framework/assessment-runtime/provider"
 	"github.com/google/uuid"
     "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
     "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"

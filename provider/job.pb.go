@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.31.0
 // 	protoc        v4.23.4
-// source: internal/provider/job.proto
+// source: provider/job.proto
 
 package provider
 
@@ -59,11 +59,11 @@ func (x SubjectType) String() string {
 }
 
 func (SubjectType) Descriptor() protoreflect.EnumDescriptor {
-	return file_internal_provider_job_proto_enumTypes[0].Descriptor()
+	return file_provider_job_proto_enumTypes[0].Descriptor()
 }
 
 func (SubjectType) Type() protoreflect.EnumType {
-	return &file_internal_provider_job_proto_enumTypes[0]
+	return &file_provider_job_proto_enumTypes[0]
 }
 
 func (x SubjectType) Number() protoreflect.EnumNumber {
@@ -72,7 +72,7 @@ func (x SubjectType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SubjectType.Descriptor instead.
 func (SubjectType) EnumDescriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{0}
+	return file_provider_job_proto_rawDescGZIP(), []int{0}
 }
 
 type ExecutionStatus int32
@@ -105,11 +105,11 @@ func (x ExecutionStatus) String() string {
 }
 
 func (ExecutionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_internal_provider_job_proto_enumTypes[1].Descriptor()
+	return file_provider_job_proto_enumTypes[1].Descriptor()
 }
 
 func (ExecutionStatus) Type() protoreflect.EnumType {
-	return &file_internal_provider_job_proto_enumTypes[1]
+	return &file_provider_job_proto_enumTypes[1]
 }
 
 func (x ExecutionStatus) Number() protoreflect.EnumNumber {
@@ -118,7 +118,7 @@ func (x ExecutionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionStatus.Descriptor instead.
 func (ExecutionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{1}
+	return file_provider_job_proto_rawDescGZIP(), []int{1}
 }
 
 type Property struct {
@@ -133,7 +133,7 @@ type Property struct {
 func (x *Property) Reset() {
 	*x = Property{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[0]
+		mi := &file_provider_job_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -146,7 +146,7 @@ func (x *Property) String() string {
 func (*Property) ProtoMessage() {}
 
 func (x *Property) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[0]
+	mi := &file_provider_job_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -159,7 +159,7 @@ func (x *Property) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Property.ProtoReflect.Descriptor instead.
 func (*Property) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{0}
+	return file_provider_job_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Property) GetName() string {
@@ -191,7 +191,7 @@ type Link struct {
 func (x *Link) Reset() {
 	*x = Link{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[1]
+		mi := &file_provider_job_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -204,7 +204,7 @@ func (x *Link) String() string {
 func (*Link) ProtoMessage() {}
 
 func (x *Link) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[1]
+	mi := &file_provider_job_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -217,7 +217,7 @@ func (x *Link) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Link.ProtoReflect.Descriptor instead.
 func (*Link) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{1}
+	return file_provider_job_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Link) GetHref() string {
@@ -276,7 +276,7 @@ type LogEntry struct {
 func (x *LogEntry) Reset() {
 	*x = LogEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[2]
+		mi := &file_provider_job_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -289,7 +289,7 @@ func (x *LogEntry) String() string {
 func (*LogEntry) ProtoMessage() {}
 
 func (x *LogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[2]
+	mi := &file_provider_job_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +302,7 @@ func (x *LogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogEntry.ProtoReflect.Descriptor instead.
 func (*LogEntry) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{2}
+	return file_provider_job_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *LogEntry) GetTitle() string {
@@ -367,7 +367,7 @@ type Expression struct {
 func (x *Expression) Reset() {
 	*x = Expression{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[3]
+		mi := &file_provider_job_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -380,7 +380,7 @@ func (x *Expression) String() string {
 func (*Expression) ProtoMessage() {}
 
 func (x *Expression) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[3]
+	mi := &file_provider_job_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +393,7 @@ func (x *Expression) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Expression.ProtoReflect.Descriptor instead.
 func (*Expression) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{3}
+	return file_provider_job_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Expression) GetKey() string {
@@ -431,7 +431,7 @@ type Selector struct {
 func (x *Selector) Reset() {
 	*x = Selector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[4]
+		mi := &file_provider_job_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -444,7 +444,7 @@ func (x *Selector) String() string {
 func (*Selector) ProtoMessage() {}
 
 func (x *Selector) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[4]
+	mi := &file_provider_job_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -457,7 +457,7 @@ func (x *Selector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Selector.ProtoReflect.Descriptor instead.
 func (*Selector) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{4}
+	return file_provider_job_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Selector) GetQuery() string {
@@ -505,7 +505,7 @@ type Subject struct {
 func (x *Subject) Reset() {
 	*x = Subject{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[5]
+		mi := &file_provider_job_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -518,7 +518,7 @@ func (x *Subject) String() string {
 func (*Subject) ProtoMessage() {}
 
 func (x *Subject) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[5]
+	mi := &file_provider_job_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -531,7 +531,7 @@ func (x *Subject) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Subject.ProtoReflect.Descriptor instead.
 func (*Subject) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{5}
+	return file_provider_job_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Subject) GetId() string {
@@ -594,7 +594,7 @@ type SubjectList struct {
 func (x *SubjectList) Reset() {
 	*x = SubjectList{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[6]
+		mi := &file_provider_job_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -607,7 +607,7 @@ func (x *SubjectList) String() string {
 func (*SubjectList) ProtoMessage() {}
 
 func (x *SubjectList) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[6]
+	mi := &file_provider_job_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -620,7 +620,7 @@ func (x *SubjectList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubjectList.ProtoReflect.Descriptor instead.
 func (*SubjectList) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{6}
+	return file_provider_job_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SubjectList) GetSubjects() []*Subject {
@@ -645,7 +645,7 @@ type Evidence struct {
 func (x *Evidence) Reset() {
 	*x = Evidence{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[7]
+		mi := &file_provider_job_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -658,7 +658,7 @@ func (x *Evidence) String() string {
 func (*Evidence) ProtoMessage() {}
 
 func (x *Evidence) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[7]
+	mi := &file_provider_job_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -671,7 +671,7 @@ func (x *Evidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Evidence.ProtoReflect.Descriptor instead.
 func (*Evidence) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{7}
+	return file_provider_job_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Evidence) GetTitle() string {
@@ -728,7 +728,7 @@ type Finding struct {
 func (x *Finding) Reset() {
 	*x = Finding{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[8]
+		mi := &file_provider_job_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -741,7 +741,7 @@ func (x *Finding) String() string {
 func (*Finding) ProtoMessage() {}
 
 func (x *Finding) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[8]
+	mi := &file_provider_job_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -754,7 +754,7 @@ func (x *Finding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Finding.ProtoReflect.Descriptor instead.
 func (*Finding) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{8}
+	return file_provider_job_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Finding) GetId() string {
@@ -840,7 +840,7 @@ type Observation struct {
 func (x *Observation) Reset() {
 	*x = Observation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[9]
+		mi := &file_provider_job_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -853,7 +853,7 @@ func (x *Observation) String() string {
 func (*Observation) ProtoMessage() {}
 
 func (x *Observation) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[9]
+	mi := &file_provider_job_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -866,7 +866,7 @@ func (x *Observation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Observation.ProtoReflect.Descriptor instead.
 func (*Observation) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{9}
+	return file_provider_job_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Observation) GetId() string {
@@ -955,7 +955,7 @@ type Risk struct {
 func (x *Risk) Reset() {
 	*x = Risk{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[10]
+		mi := &file_provider_job_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -968,7 +968,7 @@ func (x *Risk) String() string {
 func (*Risk) ProtoMessage() {}
 
 func (x *Risk) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[10]
+	mi := &file_provider_job_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +981,7 @@ func (x *Risk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Risk.ProtoReflect.Descriptor instead.
 func (*Risk) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{10}
+	return file_provider_job_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Risk) GetTitle() string {
@@ -1041,7 +1041,7 @@ type Plan struct {
 func (x *Plan) Reset() {
 	*x = Plan{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[11]
+		mi := &file_provider_job_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1054,7 +1054,7 @@ func (x *Plan) String() string {
 func (*Plan) ProtoMessage() {}
 
 func (x *Plan) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[11]
+	mi := &file_provider_job_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1067,7 +1067,7 @@ func (x *Plan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Plan.ProtoReflect.Descriptor instead.
 func (*Plan) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{11}
+	return file_provider_job_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Plan) GetId() string {
@@ -1123,7 +1123,7 @@ type EvaluateInput struct {
 func (x *EvaluateInput) Reset() {
 	*x = EvaluateInput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[12]
+		mi := &file_provider_job_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1136,7 +1136,7 @@ func (x *EvaluateInput) String() string {
 func (*EvaluateInput) ProtoMessage() {}
 
 func (x *EvaluateInput) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[12]
+	mi := &file_provider_job_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1149,7 @@ func (x *EvaluateInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EvaluateInput.ProtoReflect.Descriptor instead.
 func (*EvaluateInput) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{12}
+	return file_provider_job_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EvaluateInput) GetPlan() *Plan {
@@ -1189,7 +1189,7 @@ type EvaluateResult struct {
 func (x *EvaluateResult) Reset() {
 	*x = EvaluateResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[13]
+		mi := &file_provider_job_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1202,7 +1202,7 @@ func (x *EvaluateResult) String() string {
 func (*EvaluateResult) ProtoMessage() {}
 
 func (x *EvaluateResult) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[13]
+	mi := &file_provider_job_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1215,7 +1215,7 @@ func (x *EvaluateResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EvaluateResult.ProtoReflect.Descriptor instead.
 func (*EvaluateResult) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{13}
+	return file_provider_job_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *EvaluateResult) GetSubjects() []*Subject {
@@ -1257,7 +1257,7 @@ type ExecuteInput struct {
 func (x *ExecuteInput) Reset() {
 	*x = ExecuteInput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[14]
+		mi := &file_provider_job_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1270,7 +1270,7 @@ func (x *ExecuteInput) String() string {
 func (*ExecuteInput) ProtoMessage() {}
 
 func (x *ExecuteInput) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[14]
+	mi := &file_provider_job_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1283,7 +1283,7 @@ func (x *ExecuteInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteInput.ProtoReflect.Descriptor instead.
 func (*ExecuteInput) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{14}
+	return file_provider_job_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ExecuteInput) GetPlan() *Plan {
@@ -1332,7 +1332,7 @@ type ExecuteResult struct {
 func (x *ExecuteResult) Reset() {
 	*x = ExecuteResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_provider_job_proto_msgTypes[15]
+		mi := &file_provider_job_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1345,7 +1345,7 @@ func (x *ExecuteResult) String() string {
 func (*ExecuteResult) ProtoMessage() {}
 
 func (x *ExecuteResult) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_provider_job_proto_msgTypes[15]
+	mi := &file_provider_job_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1358,7 +1358,7 @@ func (x *ExecuteResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteResult.ProtoReflect.Descriptor instead.
 func (*ExecuteResult) Descriptor() ([]byte, []int) {
-	return file_internal_provider_job_proto_rawDescGZIP(), []int{15}
+	return file_provider_job_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ExecuteResult) GetStatus() ExecutionStatus {
@@ -1396,9 +1396,9 @@ func (x *ExecuteResult) GetLogs() []*LogEntry {
 	return nil
 }
 
-var File_internal_provider_job_proto protoreflect.FileDescriptor
+var File_provider_job_proto protoreflect.FileDescriptor
 
-var file_internal_provider_job_proto_rawDesc = []byte{
+var file_provider_job_proto_rawDesc = []byte{
 	0x0a, 0x1b, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x76, 0x69,
 	0x64, 0x65, 0x72, 0x2f, 0x6a, 0x6f, 0x62, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06, 0x70,
 	0x6c, 0x75, 0x67, 0x69, 0x6e, 0x22, 0x34, 0x0a, 0x08, 0x50, 0x72, 0x6f, 0x70, 0x65, 0x72, 0x74,
@@ -1627,20 +1627,20 @@ var file_internal_provider_job_proto_rawDesc = []byte{
 }
 
 var (
-	file_internal_provider_job_proto_rawDescOnce sync.Once
-	file_internal_provider_job_proto_rawDescData = file_internal_provider_job_proto_rawDesc
+	file_provider_job_proto_rawDescOnce sync.Once
+	file_provider_job_proto_rawDescData = file_provider_job_proto_rawDesc
 )
 
-func file_internal_provider_job_proto_rawDescGZIP() []byte {
-	file_internal_provider_job_proto_rawDescOnce.Do(func() {
-		file_internal_provider_job_proto_rawDescData = protoimpl.X.CompressGZIP(file_internal_provider_job_proto_rawDescData)
+func file_provider_job_proto_rawDescGZIP() []byte {
+	file_provider_job_proto_rawDescOnce.Do(func() {
+		file_provider_job_proto_rawDescData = protoimpl.X.CompressGZIP(file_provider_job_proto_rawDescData)
 	})
-	return file_internal_provider_job_proto_rawDescData
+	return file_provider_job_proto_rawDescData
 }
 
-var file_internal_provider_job_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_internal_provider_job_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
-var file_internal_provider_job_proto_goTypes = []interface{}{
+var file_provider_job_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_provider_job_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_provider_job_proto_goTypes = []interface{}{
 	(SubjectType)(0),       // 0: plugin.SubjectType
 	(ExecutionStatus)(0),   // 1: plugin.ExecutionStatus
 	(*Property)(nil),       // 2: plugin.Property
@@ -1666,7 +1666,7 @@ var file_internal_provider_job_proto_goTypes = []interface{}{
 	nil,                    // 22: plugin.ExecuteInput.PropsEntry
 	nil,                    // 23: plugin.ExecuteInput.ConfigurationEntry
 }
-var file_internal_provider_job_proto_depIdxs = []int32{
+var file_provider_job_proto_depIdxs = []int32{
 	2,  // 0: plugin.LogEntry.Props:type_name -> plugin.Property
 	3,  // 1: plugin.LogEntry.Links:type_name -> plugin.Link
 	18, // 2: plugin.Selector.Labels:type_name -> plugin.Selector.LabelsEntry
@@ -1710,13 +1710,13 @@ var file_internal_provider_job_proto_depIdxs = []int32{
 	0,  // [0:32] is the sub-list for field type_name
 }
 
-func init() { file_internal_provider_job_proto_init() }
-func file_internal_provider_job_proto_init() {
-	if File_internal_provider_job_proto != nil {
+func init() { file_provider_job_proto_init() }
+func file_provider_job_proto_init() {
+	if File_provider_job_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_internal_provider_job_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Property); i {
 			case 0:
 				return &v.state
@@ -1728,7 +1728,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Link); i {
 			case 0:
 				return &v.state
@@ -1740,7 +1740,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogEntry); i {
 			case 0:
 				return &v.state
@@ -1752,7 +1752,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Expression); i {
 			case 0:
 				return &v.state
@@ -1764,7 +1764,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Selector); i {
 			case 0:
 				return &v.state
@@ -1776,7 +1776,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Subject); i {
 			case 0:
 				return &v.state
@@ -1788,7 +1788,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SubjectList); i {
 			case 0:
 				return &v.state
@@ -1800,7 +1800,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Evidence); i {
 			case 0:
 				return &v.state
@@ -1812,7 +1812,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Finding); i {
 			case 0:
 				return &v.state
@@ -1824,7 +1824,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Observation); i {
 			case 0:
 				return &v.state
@@ -1836,7 +1836,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Risk); i {
 			case 0:
 				return &v.state
@@ -1848,7 +1848,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Plan); i {
 			case 0:
 				return &v.state
@@ -1860,7 +1860,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EvaluateInput); i {
 			case 0:
 				return &v.state
@@ -1872,7 +1872,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EvaluateResult); i {
 			case 0:
 				return &v.state
@@ -1884,7 +1884,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ExecuteInput); i {
 			case 0:
 				return &v.state
@@ -1896,7 +1896,7 @@ func file_internal_provider_job_proto_init() {
 				return nil
 			}
 		}
-		file_internal_provider_job_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_provider_job_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ExecuteResult); i {
 			case 0:
 				return &v.state
@@ -1913,19 +1913,19 @@ func file_internal_provider_job_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_internal_provider_job_proto_rawDesc,
+			RawDescriptor: file_provider_job_proto_rawDesc,
 			NumEnums:      2,
 			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_internal_provider_job_proto_goTypes,
-		DependencyIndexes: file_internal_provider_job_proto_depIdxs,
-		EnumInfos:         file_internal_provider_job_proto_enumTypes,
-		MessageInfos:      file_internal_provider_job_proto_msgTypes,
+		GoTypes:           file_provider_job_proto_goTypes,
+		DependencyIndexes: file_provider_job_proto_depIdxs,
+		EnumInfos:         file_provider_job_proto_enumTypes,
+		MessageInfos:      file_provider_job_proto_msgTypes,
 	}.Build()
-	File_internal_provider_job_proto = out.File
-	file_internal_provider_job_proto_rawDesc = nil
-	file_internal_provider_job_proto_goTypes = nil
-	file_internal_provider_job_proto_depIdxs = nil
+	File_provider_job_proto = out.File
+	file_provider_job_proto_rawDesc = nil
+	file_provider_job_proto_goTypes = nil
+	file_provider_job_proto_depIdxs = nil
 }

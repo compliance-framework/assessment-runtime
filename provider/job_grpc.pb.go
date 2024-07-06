@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: internal/provider/job.proto
+// source: provider/job.proto
 
 package provider
 
@@ -140,5 +140,5 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/provider/job.proto",
+	Metadata: "provider/job.proto",
 }

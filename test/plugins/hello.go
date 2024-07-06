@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/compliance-framework/assessment-runtime/internal/provider"
+	. "github.com/compliance-framework/assessment-runtime/provider"
 )
 
 type Hello struct {
