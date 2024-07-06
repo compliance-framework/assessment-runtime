@@ -6,6 +6,7 @@ import (
 	"github.com/compliance-framework/assessment-runtime/internal/event"
 	"github.com/compliance-framework/assessment-runtime/internal/model"
 	"github.com/compliance-framework/assessment-runtime/internal/pubsub"
+	"github.com/compliance-framework/assessment-runtime/internal/registry"
 	"github.com/go-resty/resty/v2"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -108,6 +109,11 @@ func (cm *ConfigurationManager) Listen() {
 						Type: pubsub.ConfigurationUpdated,
 						Data: cm.jobSpecs,
 					})
+					pluginDownloader := registry.NewPackageDownloader()
+					err = pluginDownloader.DownloadPackages(cm.Packages())
+					if err != nil {
+					    log.Errorf("Error downloading some of the plugins: %s", err)
+					}
 				} else if planEvent.Type == "delete" {
 					err := os.Remove(filepath.Join("assessments", planEvent.Data.Id+".yaml"))
 					if err != nil {
@@ -218,11 +224,12 @@ func (cm *ConfigurationManager) Packages() []model.Package {
 	for _, jobSpec := range cm.jobSpecs {
 		for _, task := range jobSpec.Tasks {
 			for _, activity := range task.Activities {
-				key := activity.Provider.Package + activity.Provider.Version
+				key := activity.Provider.Package + activity.Provider.Tag
 				if _, exists := pluginInfoMap[key]; !exists {
 					info := model.Package{
 						Name:    activity.Provider.Package,
-						Version: activity.Provider.Version,
+						Tag:     activity.Provider.Tag,
+						Image:   activity.Provider.Image,
 					}
 					pluginInfoMap[key] = info
 				}

@@ -24,7 +24,7 @@ schedule: "*/10 * * * * *"
 plugins:
   - name: "do-nothing"
     package: "sample"
-    version: "1.0.0"
+    tag: "latest"
     configuration:
 		config1: "value1"
 		config2: "value2"

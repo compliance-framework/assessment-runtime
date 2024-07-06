@@ -55,7 +55,7 @@ func (r *Runner) loadProviders() error {
 			pluginMap[pluginConfig.Name] = &provider.GrpcPlugin{}
 		}
 		pluginsPath := filepath.Join(filepath.Dir(ex), "./plugins")
-		packagePath := fmt.Sprintf("%s/%s/%s/%s", pluginsPath, pkg, plugins[0].Version, pkg)
+		packagePath := fmt.Sprintf("%s/%s/%s/%s", pluginsPath, pkg, plugins[0].Tag, "plugin")
 
 		log.WithFields(log.Fields{
 			"package":     pkg,

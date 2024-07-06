@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/compliance-framework/assessment-runtime/internal/config"
 	"github.com/compliance-framework/assessment-runtime/internal/event"
-	"github.com/compliance-framework/assessment-runtime/internal/registry"
 	"github.com/compliance-framework/assessment-runtime/internal/scheduling"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -35,13 +34,6 @@ func main() {
 	}
 
 	confManager.Listen()
-
-	// Download plugin packages
-	pluginDownloader := registry.NewPackageDownloader(confManager.Config().PluginRegistryURL)
-	err = pluginDownloader.DownloadPackages(confManager.Packages())
-	if err != nil {
-		log.Errorf("Error downloading some of the plugins: %s", err)
-	}
 
 	scheduler := scheduling.NewScheduler(confManager.JobSpecs())
 
