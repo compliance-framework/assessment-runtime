@@ -32,7 +32,6 @@ func TestPublishEventConfigChanged(t *testing.T) {
 				Plugins: []config.PluginConfig{
 					{
 						Name:    "busy-plugin",
-						Package: "busy",
 						Version: "1.0.0",
 						Configuration: []config.Pair{
 							{

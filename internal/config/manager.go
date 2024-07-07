@@ -223,10 +223,10 @@ func (cm *ConfigurationManager) Packages() []model.Package {
 	for _, jobSpec := range cm.jobSpecs {
 		for _, task := range jobSpec.Tasks {
 			for _, activity := range task.Activities {
-				key := activity.Provider.Package + activity.Provider.Tag
+				key := activity.Provider.Name + activity.Provider.Tag
 				if _, exists := pluginInfoMap[key]; !exists {
 					info := model.Package{
-						Name:    activity.Provider.Package,
+						Name:    activity.Provider.Name,
 						Tag:     activity.Provider.Tag,
 						Image:   activity.Provider.Image,
 					}

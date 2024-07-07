@@ -51,7 +51,6 @@ type Selector struct {
 
 type Provider struct {
 	Name          string            `json:"name" yaml:"name"`
-	Package       string            `json:"package" yaml:"package"`
 	Image         string            `json:"image" yaml:"image"`
 	Tag           string            `json:"tag" yaml:"tag"`
 	Configuration map[string]string `json:"configuration" yaml:"configuration"`

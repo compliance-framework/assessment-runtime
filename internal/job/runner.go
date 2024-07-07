@@ -37,7 +37,7 @@ func (r *Runner) loadProviders() error {
 	pluginMap := make(map[string][]model.Provider)
 	for _, task := range r.spec.Tasks {
 		for _, activity := range task.Activities {
-			pluginMap[activity.Provider.Package] = append(pluginMap[activity.Provider.Package], activity.Provider)
+			pluginMap[activity.Provider.Name] = append(pluginMap[activity.Provider.Name], activity.Provider)
 		}
 	}
 
