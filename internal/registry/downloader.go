@@ -18,10 +18,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Downloader struct {
-}
+func DownloadPackages(packages []model.Package) error {
+	var wg sync.WaitGroup
+	var errorCh = make(chan error)
 
-func NewPackageDownloader() *Downloader {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -31,15 +31,9 @@ func NewPackageDownloader() *Downloader {
 	 	err = os.MkdirAll(pluginsPath, 0755)
 		if err != nil {
 			log.Errorf("Failed to create directory: %v", err)
-			return nil
+			return err
 		}
 	}
-	return nil
-}
-
-func (m *Downloader) DownloadPackages(packages []model.Package) error {
-	var wg sync.WaitGroup
-	var errorCh = make(chan error)
 
 	for _, pkg := range packages {
 		wg.Add(1)
@@ -50,7 +44,7 @@ func (m *Downloader) DownloadPackages(packages []model.Package) error {
 				"Tag":     p.Tag,
 				"image":   p.Image,
 			}).Info("Downloading package")
-			if err := m.downloadPackage(p); err != nil {
+			if err := downloadPackage(p); err != nil {
 				errorCh <- err
 			} else {
 				log.WithFields(log.Fields{
@@ -81,7 +75,7 @@ func (m *Downloader) DownloadPackages(packages []model.Package) error {
 	return nil
 }
 
-func (m *Downloader) downloadPackage(p model.Package) error {
+func downloadPackage(p model.Package) error {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
@@ -98,8 +92,7 @@ func (m *Downloader) downloadPackage(p model.Package) error {
 	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
 		err = os.MkdirAll(pluginPath, 0755)
 		if err != nil {
-			log.Errorf("Failed to create directory: %v", err)
-			return nil
+			return fmt.Errorf("failed to create directory: %v" , err)
 		}
 	}
 
@@ -154,22 +147,6 @@ func splitDockerImageSpec(imageSpec string) (registryUrl string, repository stri
 
 	return registryUrl, repository, nil
 }
-
-func main() {
-	imageSpec := "https://ghcr.io/compliance-framework/azure-cf-plugin"
-
-	registryUrl, repository, err := splitDockerImageSpec(imageSpec)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-
-	fmt.Printf("Registry URL: %s\n", registryUrl)
-	fmt.Printf("Repository: %s\n", repository)
-}
-
-
-
 
 func getDockerImageFolder(registryURL string, repository string, tag string, authURL string, copyFolder string, destination string) error {
 	ctx := context.Background()

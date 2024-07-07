@@ -108,8 +108,7 @@ func (cm *ConfigurationManager) Listen() {
 						Type: pubsub.ConfigurationUpdated,
 						Data: cm.jobSpecs,
 					})
-					pluginDownloader := registry.NewPackageDownloader()
-					err = pluginDownloader.DownloadPackages(cm.Packages())
+					err = registry.DownloadPackages(cm.Packages())
 					if err != nil {
 					    log.Errorf("Error downloading some of the plugins: %s", err)
 					}
