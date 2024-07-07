@@ -11,7 +11,6 @@ func TestLoadConfig(t *testing.T) {
 	configYml := `
 runtimeId: "123e4567-e89b-12d3-a456-426614174000"
 controlPlaneAPI: "http://localhost:1234"
-pluginRegistryURL: "http://plugin-registry"
 eventBusURL: "nats://nats:4222"
 `
 

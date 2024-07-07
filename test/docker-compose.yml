@@ -1,10 +1,4 @@
 services:
-  plugin-registry:
-    build:
-      context: ../
-      dockerfile: test/registry/Dockerfile
-    ports:
-      - "3000:3000"
   nats:
     image: nats:latest
     volumes:

@@ -20,7 +20,6 @@ import (
 type Config struct {
 	RuntimeId         string `yaml:"runtimeId" json:"runtimeId"`
 	ControlPlaneURL   string `yaml:"controlPlaneURL" json:"controlPlaneURL"`
-	PluginRegistryURL string `yaml:"pluginRegistryURL" json:"pluginRegistryURL"`
 	EventBusURL       string `yaml:"eventBusURL" json:"eventBusURL"`
 }
 

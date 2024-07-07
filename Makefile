@@ -3,7 +3,7 @@ BINARY_NAME=ar
 CONFIG=configs/config.yaml
 GO=go
 
-.PHONY: help build test clean fmt vet lint build-images run-docker build-plugin run-local protoc graph
+.PHONY: help build test clean fmt vet lint build-images run-docker run-local protoc graph
 
 help:  ## Display this help message
 	@echo "Help for Makefile: $(MAKEFILE_LIST) in $(dir $(abspath $(lastword $(MAKEFILE_LIST))))"
@@ -53,7 +53,7 @@ stop-docker:  ## Stop the test environment
 	@echo "Stopping Docker Compose..."
 	docker compose -p argus -f ./test/docker-compose.yml down
 
-run-local: build-plugin  ## Build and run the application locally
+run-local:   ## Build and run the application locally
 	@echo "Building and running $(BINARY_NAME) locally..."
 	@$(GO) build -o ./bin/$(BINARY_NAME) ./
 	./bin/$(BINARY_NAME)
