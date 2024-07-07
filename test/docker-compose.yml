@@ -8,6 +8,6 @@ services:
   assessment-runtime:
     build:
       context: ../
-      dockerfile: test/runtime/Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       - plugin-registry

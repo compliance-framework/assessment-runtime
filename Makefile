@@ -36,14 +36,14 @@ lint:  ## Lint the code
 	@golint ./...
 
 build-local:  ## Build image to be used locally
-	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local -f ./test/runtime/Dockerfile .
+	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local .
 
 build-local-ar:  ## Build assessment-runtime
-	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local -f ./test/runtime/Dockerfile .
+	docker build -t ghcr.io/compliance-framework/assessment-runtime:latest_local .
 
 build-images:  ## Build Docker images
 	@echo "Building Docker images..."
-	docker build -t assessment-runtime -f test/runtime/Dockerfile .
+	docker build -t assessment-runtime .
 
 run-docker:  ## Run the test environment using Docker Compose
 	@echo "Running Docker Compose..."
